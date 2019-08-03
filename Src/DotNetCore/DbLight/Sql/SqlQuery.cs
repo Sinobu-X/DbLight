@@ -36,11 +36,11 @@ namespace DbLight.Sql
         }
 
         
-        public T To<T>(){
-            return default(T);
+        public T1 To<T1>(){
+            return default(T1);
         }
 
-        public bool In<T>(T value){
+        public bool In<T1>(T1 value){
             return true;
         }
 
@@ -313,7 +313,7 @@ namespace DbLight.Sql
             return _context.ExecQueryToDataTable(ToString());
         }
         
-        public Task<DataTable> ToDataTableAsync(){
+        public new Task<DataTable> ToDataTableAsync(){
             return _context.ExecQueryToDataTableAsync(ToString());
         }
 
@@ -333,11 +333,11 @@ namespace DbLight.Sql
             return _context.ExecQueryToList(ToString(), converter);
         }
 
-        public T To<T>(){
-            return default(T);
+        public new T1 To<T1>(){
+            return default(T1);
         }
 
-        public bool In<T>(T value){
+        public new bool In<T1>(T1 value){
             return true;
         }
 
