@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AssemblyName>DbLightCore</AssemblyName>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,5 +16,8 @@
   <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="4.6.1" />
     <PackageReference Include="log4net" Version="2.0.8" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="LICENSE.txt" />
   </ItemGroup>
 </Project>
