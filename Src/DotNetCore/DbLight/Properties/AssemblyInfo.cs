@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 
 [assembly: AssemblyTitle("DbLightCore")]
-[assembly: AssemblyDescription("Async ORM for .NET Core")]
+[assembly: AssemblyDescription("ORM for .NET Core")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Sinobu-X")]
 [assembly: AssemblyProduct("DbLightCore")]
@@ -9,5 +9,5 @@
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-[assembly: AssemblyVersion("1.0.0.2")]
-[assembly: AssemblyFileVersion("1.0.0.2")]
+[assembly: AssemblyVersion("1.0.0.3")]
+[assembly: AssemblyFileVersion("1.0.0.3")]
