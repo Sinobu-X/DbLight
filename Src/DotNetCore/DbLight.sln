@@ -1,0 +1,29 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbLight", "DbLight\DbLight.csproj", "{813E2672-722B-4DD8-BF04-4373B6A47461}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbLightTest", "DbLightTest\DbLightTest.csproj", "{AAE4B43E-8A29-44D5-9464-C9098D912796}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EFTest", "EFTest\EFTest.csproj", "{5F210C84-CAE9-4474-AF85-9F4FF4C6C4E3}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{813E2672-722B-4DD8-BF04-4373B6A47461}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{813E2672-722B-4DD8-BF04-4373B6A47461}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{813E2672-722B-4DD8-BF04-4373B6A47461}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{813E2672-722B-4DD8-BF04-4373B6A47461}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAE4B43E-8A29-44D5-9464-C9098D912796}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAE4B43E-8A29-44D5-9464-C9098D912796}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAE4B43E-8A29-44D5-9464-C9098D912796}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAE4B43E-8A29-44D5-9464-C9098D912796}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F210C84-CAE9-4474-AF85-9F4FF4C6C4E3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F210C84-CAE9-4474-AF85-9F4FF4C6C4E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F210C84-CAE9-4474-AF85-9F4FF4C6C4E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F210C84-CAE9-4474-AF85-9F4FF4C6C4E3}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
