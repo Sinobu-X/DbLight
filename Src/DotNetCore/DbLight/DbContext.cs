@@ -17,7 +17,6 @@ namespace DbLight
         public DbConnection Connection{ get; }
 
         //private
-        private readonly log4net.ILog _log = log4net.LogManager.GetLogger(typeof(DbConnection));
         private SqlConnection _cnSqlServer;
         private SqlTransaction _transSqlServer;
 
@@ -39,7 +38,7 @@ namespace DbLight
                 _transSqlServer?.Dispose();
             }
             catch (Exception ex){
-                _log.Warn("Dispose SqlServer Transaction Failed.", ex);
+                Connection.Warn("Dispose SqlServer Transaction Failed.", ex);
             }
             finally{
                 _transSqlServer = null;
@@ -49,7 +48,7 @@ namespace DbLight
                 _cnSqlServer?.Dispose();
             }
             catch (Exception ex){
-                _log.Warn("Dispose SqlServer Connection Failed.", ex);
+                Connection.Warn("Dispose SqlServer Connection Failed.", ex);
             }
             finally{
                 _cnSqlServer = null;
@@ -82,7 +81,7 @@ namespace DbLight
                 success = true;
             }
             catch (Exception ex){
-                _log.Warn("Begin SqlServer Transaction Failed", ex);
+                Connection.Warn("Begin SqlServer Transaction Failed", ex);
                 throw;
             }
             finally{
@@ -94,7 +93,7 @@ namespace DbLight
                         }
                     }
                     catch (Exception ex){
-                        _log.Warn("Dispose SqlServer Transaction Failed.", ex);
+                        Connection.Warn("Dispose SqlServer Transaction Failed.", ex);
                     }
 
                     try{
@@ -104,7 +103,7 @@ namespace DbLight
                         }
                     }
                     catch (Exception ex){
-                        _log.Warn("Dispose SqlServer Connection Failed.", ex);
+                        Connection.Warn("Dispose SqlServer Connection Failed.", ex);
                     }
                 }
             }
@@ -135,7 +134,7 @@ namespace DbLight
                 success = true;
             }
             catch (Exception ex){
-                _log.Warn("Begin SqlServer Transaction Failed", ex);
+                Connection.Warn("Begin SqlServer Transaction Failed", ex);
                 throw;
             }
             finally{
@@ -147,7 +146,7 @@ namespace DbLight
                         }
                     }
                     catch (Exception ex){
-                        _log.Warn("Dispose SqlServer Transaction Failed.", ex);
+                        Connection.Warn("Dispose SqlServer Transaction Failed.", ex);
                     }
 
                     try{
@@ -157,7 +156,7 @@ namespace DbLight
                         }
                     }
                     catch (Exception ex){
-                        _log.Warn("Dispose SqlServer Connection Failed.", ex);
+                        Connection.Warn("Dispose SqlServer Connection Failed.", ex);
                     }
                 }
             }
@@ -310,11 +309,11 @@ namespace DbLight
                     dt = ExecQueryToDataTable_SqlServer_ExecuteReader(_cnSqlServer, _transSqlServer, sql, maxRecords);
                 }
 
-                _log.Info(sql);
+                Connection.Info(sql);
                 return dt;
             }
             catch (Exception ex){
-                _log.Error(sql, ex);
+                Connection.Error(sql, ex);
                 throw;
             }
         }
@@ -389,11 +388,11 @@ namespace DbLight
                         _transSqlServer, sql, maxRecords);
                 }
 
-                _log.Info(sql);
+                Connection.Info(sql);
                 return dt;
             }
             catch (Exception ex){
-                _log.Error(sql, ex);
+                Connection.Error(sql, ex);
                 throw;
             }
         }
@@ -482,11 +481,11 @@ namespace DbLight
                         _cnSqlServer, _transSqlServer, sql, maxRecords, converter);
                 }
 
-                _log.Info(sql);
+                Connection.Info(sql);
                 return list;
             }
             catch (Exception ex){
-                _log.Error(sql, ex);
+                Connection.Error(sql, ex);
                 throw;
             }
         }
@@ -576,11 +575,11 @@ namespace DbLight
                         converter);
                 }
 
-                _log.Info(sql);
+                Connection.Info(sql);
                 return list;
             }
             catch (Exception ex){
-                _log.Error(sql, ex);
+                Connection.Error(sql, ex);
                 throw;
             }
         }
@@ -694,11 +693,11 @@ namespace DbLight
                     }
                 }
 
-                _log.Info(sql);
+                Connection.Info(sql);
                 return cnt;
             }
             catch (Exception ex){
-                _log.Error(sql, ex);
+                Connection.Error(sql, ex);
                 throw;
             }
         }
@@ -771,11 +770,11 @@ namespace DbLight
                     }
                 }
 
-                _log.Info(sql);
+                Connection.Info(sql);
                 return cnt;
             }
             catch (Exception ex){
-                _log.Error(sql, ex);
+                Connection.Error(sql, ex);
                 throw;
             }
         }

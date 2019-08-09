@@ -14,6 +14,9 @@ namespace DbLight.Common
         public AccessInfo Access{ get; set; }
         public OracleInfo Oracle{ get; set; }
         public List<(string virtualName, string realName)> Groups{ get; set; } = new List<(string, string)>();
+        public DbLogError LogError{ get; set; }
+        public DBLogWarn LogWarn{ get; set; }
+        public DBLogInfo LogInfo{ get; set; }
 
         public DbConnection(DbDatabaseType dbType){
             DbType = dbType;
@@ -54,12 +57,31 @@ namespace DbLight.Common
                 if (item.virtualName == null){
                     return "[" + database + "]..[" + table + "]";
                 }
+
                 else{
                     return "[" + item.realName + "]..[" + table + "]";
                 }
             }
             else{
                 throw new DbUnexpectedDbTypeException();
+            }
+        }
+
+        public void Info(string message){
+            if (LogInfo != null){
+                LogInfo(message);
+            }
+        }
+
+        internal void Warn(string message, Exception ex){
+            if (LogWarn != null){
+                LogWarn(message, ex);
+            }
+        }
+
+        internal void Error(string message, Exception ex){
+            if (LogError != null){
+                LogError(message, ex);
             }
         }
     }
