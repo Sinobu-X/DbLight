@@ -1,4 +1,4 @@
 # DbLight
 
-Async ORM for .Net Core
+ORM for .Net Core
 
