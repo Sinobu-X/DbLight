@@ -48,11 +48,11 @@ namespace DbLight.Sql
             _item = item;
         }
 
-        public SqlUpdate<T> Columns<T1>(Expression<Func<T, T1>> columns){
-            return Columns<T1, T1>(columns, null);
+        public SqlUpdate<T> Select<T1>(Expression<Func<T, T1>> columns){
+            return Select<T1, T1>(columns, null);
         }
 
-        public SqlUpdate<T> Columns<T1, T2>(Expression<Func<T, T1>> columns,
+        public SqlUpdate<T> Select<T1, T2>(Expression<Func<T, T1>> columns,
             Expression<Func<T, T2>> ignoreColumns){
             var selectItems = DbExpressionHelper.ReadColumnExpression(columns, ModelInfo);
             var ignoreItems = ignoreColumns != null

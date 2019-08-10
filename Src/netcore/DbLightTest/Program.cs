@@ -22,7 +22,7 @@ namespace DbLightTest
             _log.Info("App Running...");
 
             var connection = new DbConnection(DbDatabaseType.SqlServer,
-                "server=127.0.0.1;uid=sa;pwd=-101868;database=EFDemo;Connect Timeout=900");
+                "server=127.0.0.1;uid=sa;pwd=test;database=EFDemo;Connect Timeout=900");
             connection.Groups.Add(("Demo", "EFDemo"));
 
             var need = true;
@@ -41,7 +41,7 @@ namespace DbLightTest
 //                w.Stop();
 //                Console.WriteLine("T = " + w.ElapsedMilliseconds);
 
-                Test_QueryForSingleTable(connection).Wait();
+                //Test_QueryForSingleTable(connection).Wait();
 
                 //TestQueryBySql(dbcn).Wait();
                 //TestReflection();
@@ -50,6 +50,8 @@ namespace DbLightTest
                 //TestObjectQueryBySql(dbcn).Wait();
 
                 //TestExpressionHelper();
+
+                //Test_WhereEqual(connection).Wait();
 
                 var command = Console.ReadLine().ToUpper();
                 if (command == "R"){
@@ -68,6 +70,113 @@ namespace DbLightTest
             }
 
             //Console.Read();
+        }
+
+        static async Task Test_WhereEqual(DbConnection connection){
+            var db = new DbContext(connection);
+
+            var times = 100000;
+
+            var item = new Post();
+            item.PostId = 24;
+            item.BlogId = 12;
+
+            var sw = new Stopwatch();
+
+            sw.Reset();
+            sw.Start();
+            for (var i = 0; i < times; i++){
+                var s = db.Query<Post>()
+                    .Select(x => new{
+                        x.PostId,
+                        x.BlogId
+                    })
+                    .WhereBegin()
+                    .Compare(x => x.PostId, SqlCompareType.GreaterOrEqual, item.PostId)
+                    .Compare(x => x.BlogId, SqlCompareType.Equal, item.BlogId)
+                    .Compare(x => x.PostId, SqlCompareType.GreaterOrEqual, item.PostId)
+                    .Compare(x => x.BlogId, SqlCompareType.Equal, item.BlogId)
+                    .Compare(x => x.PostId, SqlCompareType.GreaterOrEqual, item.PostId)
+                    .Compare(x => x.BlogId, SqlCompareType.Equal, item.BlogId)
+                    .WhereEnded()
+                    .ToString();
+            }
+
+            sw.Stop();
+            Console.WriteLine($"Time = {sw.ElapsedMilliseconds}");
+            
+            sw.Reset();
+            sw.Start();
+            for (var i = 0; i < times; i++){
+                var s = db.Update(item)
+                    .Select(x => new{
+                        x.PostId,
+                        x.Title
+                    })
+                    .WhereBegin()
+                    .Compare(x => x.PostId, SqlCompareType.GreaterOrEqual, item.PostId)
+                    .Compare(x => x.BlogId, SqlCompareType.Equal, item.BlogId)
+                    .Compare(x => x.PostId, SqlCompareType.GreaterOrEqual, item.PostId)
+                    .Compare(x => x.BlogId, SqlCompareType.Equal, item.BlogId)
+                    .Compare(x => x.PostId, SqlCompareType.GreaterOrEqual, item.PostId)
+                    .Compare(x => x.BlogId, SqlCompareType.Equal, item.BlogId)
+                    .WhereEnded()
+                    .ToString();
+            }
+
+            sw.Stop();
+            Console.WriteLine($"Time = {sw.ElapsedMilliseconds}");
+            
+            sw.Reset();
+            sw.Start();
+            for (var i = 0; i < times; i++){
+                var s = db.Delete<Post>()
+                    .WhereBegin()
+                    .Compare(x => x.PostId, SqlCompareType.GreaterOrEqual, item.PostId)
+                    .Compare(x => x.BlogId, SqlCompareType.Equal, item.BlogId)
+                    .Compare(x => x.PostId, SqlCompareType.GreaterOrEqual, item.PostId)
+                    .Compare(x => x.BlogId, SqlCompareType.Equal, item.BlogId)
+                    .Compare(x => x.PostId, SqlCompareType.GreaterOrEqual, item.PostId)
+                    .Compare(x => x.BlogId, SqlCompareType.Equal, item.BlogId)
+                    .WhereEnded()
+                    .ToString();
+            }
+
+            sw.Stop();
+            Console.WriteLine($"Time = {sw.ElapsedMilliseconds}");
+
+
+//            sw.Reset();
+//            sw.Start();
+//            for (var i = 0; i < times; i++){
+//                var s = db.Query<Post>()
+////                    .Select(x => new{
+////                        x.PostId,
+////                        x.BlogId
+////                    })
+//                    .Where(x => x.PostId >= item.PostId && x.BlogId == item.BlogId &&
+//                                x.PostId >= item.PostId && x.BlogId == item.BlogId &&
+//                                x.PostId >= item.PostId && x.BlogId == item.BlogId)
+//                    .ToString();
+//            }
+//
+//            sw.Stop();
+//            Console.WriteLine($"Time = {sw.ElapsedMilliseconds}");
+
+
+            sw.Reset();
+            sw.Start();
+            for (var i = 0; i < times; i++){
+                var BLOG_ID = "BlogId";
+                var POST_ID = "PostId";
+                var POST = "[].[Post]";
+
+                var s =
+                    $"SELECT {BLOG_ID},{POST_ID} {POST} WHERE {POST_ID} >= {item.PostId} AND {BLOG_ID} = {item.BlogId}";
+            }
+
+            sw.Stop();
+            Console.WriteLine($"Time = {sw.ElapsedMilliseconds}");
         }
 
         static async Task Test_QueryForSingleTable(DbConnection connection){
@@ -120,7 +229,7 @@ namespace DbLightTest
                 };
 
                 var sql = db.Update(item)
-                    .Columns(x => new{
+                    .Select(x => new{
                         x.Title,
                         x.Price
                     })
@@ -154,7 +263,7 @@ namespace DbLightTest
                 w.Start();
 
                 var batchSql = new List<string>();
-                var updater = db.Update<Post>(null).Columns(y => new{
+                var updater = db.Update<Post>(null).Select(y => new{
                     y.Price,
                     y.Title
                 });

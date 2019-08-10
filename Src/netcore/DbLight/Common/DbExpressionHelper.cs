@@ -482,6 +482,70 @@ namespace DbLight.Common
 
         #endregion
 
+        #region Where Compare Expression
+
+        public static string ReadQueryWhereCompareExpression(
+            DbConnection connection, DbModelInfo modelInfo,
+            Expression expression, ExpressionType expressionType,
+            object value){
+            return new DbWhereExpression(connection, modelInfo,
+                    expression, DbWhereType.Query)
+                .ToCompareSql(expressionType, value);
+        }
+
+        public static string ReadEditWhereCompareExpression(
+            DbConnection connection, DbModelInfo modelInfo,
+            Expression expression, ExpressionType expressionType,
+            object value){
+            return new DbWhereExpression(connection, modelInfo,
+                    expression, DbWhereType.Edit)
+                .ToCompareSql(expressionType, value);
+        }
+
+        #endregion
+
+        #region Where Like Expression
+
+        internal static string ReadQueryWhereLikeExpression(
+            DbConnection connection, DbModelInfo modelInfo,
+            Expression expression, DbWhereLikeType likeType,
+            string value){
+            return new DbWhereExpression(connection, modelInfo,
+                    expression, DbWhereType.Query)
+                .ToLikeSql(likeType, value);
+        }
+
+        internal static string ReadEditWhereLikeExpression(
+            DbConnection connection, DbModelInfo modelInfo,
+            Expression expression, DbWhereLikeType likeType,
+            string value){
+            return new DbWhereExpression(connection, modelInfo,
+                    expression, DbWhereType.Edit)
+                .ToLikeSql(likeType, value);
+        }
+
+        #endregion
+
+        #region Where In Expression
+
+        internal static string ReadQueryWhereInExpression<T2>(
+            DbConnection connection, DbModelInfo modelInfo,
+            Expression expression, IEnumerable<T2> values){
+            return new DbWhereExpression(connection, modelInfo,
+                    expression, DbWhereType.Query)
+                .ToInSql(values);
+        }
+
+        internal static string ReadEditWhereInExpression<T2>(
+            DbConnection connection, DbModelInfo modelInfo,
+            Expression expression, IEnumerable<T2> values){
+            return new DbWhereExpression(connection, modelInfo,
+                    expression, DbWhereType.Edit)
+                .ToInSql(values);
+        }
+
+        #endregion
+
         #region Any Expression
 
         public static string ReadEditAnyExpression<T, T2>(DbConnection connection, DbModelInfo modelInfo,
@@ -587,6 +651,73 @@ namespace DbLight.Common
             _modelInfo = modelInfo;
             _expression = expression;
             _whereType = whereType;
+        }
+
+        public string ToCompareSql(ExpressionType expressionType, object value){
+            var column = ColumnToSql(_expression);
+            string connect;
+            switch (expressionType){
+                case ExpressionType.Equal:
+                    connect = " = ";
+                    break;
+                case ExpressionType.NotEqual:
+                    connect = " <> ";
+                    break;
+                case ExpressionType.GreaterThan:
+                    connect = " > ";
+                    break;
+                case ExpressionType.LessThan:
+                    connect = " < ";
+                    break;
+                case ExpressionType.GreaterThanOrEqual:
+                    connect = " >= ";
+                    break;
+                case ExpressionType.LessThanOrEqual:
+                    connect = " <= ";
+                    break;
+                default:
+                    throw new DbUnknownException("Unexpected Expression Type.\n" +
+                                                 "Expression Type: " + expressionType);
+            }
+
+            return $"{column} {connect} {DbUt.ValueToWhereSql(_connection, value)}";
+        }
+
+        public string ToLikeSql(DbWhereLikeType likeType, string value){
+            var column = ColumnToSql(_expression);
+            string likeValue;
+            if (_connection.DbType == DbDatabaseType.SqlServer){
+                switch (likeType){
+                    case DbWhereLikeType.Before:
+                        likeValue = $"N'{value.Replace("'", "''")}%'";
+                        break;
+                    case DbWhereLikeType.After:
+                        likeValue = $"N'%{value.Replace("'", "''")}'";
+                        break;
+                    case DbWhereLikeType.Middle:
+                        likeValue = $"N'%{value.Replace("'", "''")}%'";
+                        break;
+                    default:
+                        throw new DbUnknownException("Unexpected Like Type.\n" +
+                                                     "Like Type: " + likeType);
+                }
+            }
+            else{
+                throw new DbUnexpectedDbTypeException();
+            }
+
+            return $"{column} LIKE {likeValue}";
+        }
+
+        public string ToInSql<T2>(IEnumerable<T2> values){
+            var column = ColumnToSql(_expression);
+            var strValues = new List<string>();
+
+            foreach (var value in values){
+                strValues.Add(DbUt.ValueToWhereSql(_connection, value));
+            }
+
+            return $"{column} IN ({string.Join(", ", strValues)})";
         }
 
         public override string ToString(){
@@ -1108,5 +1239,12 @@ namespace DbLight.Common
     {
         Query,
         Edit
+    }
+
+    internal enum DbWhereLikeType
+    {
+        Before,
+        After,
+        Middle
     }
 }

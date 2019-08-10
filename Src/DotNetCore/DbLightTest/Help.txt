@@ -1,2 +1,0 @@
-nuget pack DbLight.csproj
- nuget push DbLightCore.1.0.0.4.nupkg  -source nuget.org

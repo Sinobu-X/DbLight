@@ -3,6 +3,7 @@ using System.Data;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using DbLight.Common;
@@ -29,13 +30,13 @@ namespace DbLight.Sql
         public SqlQuery(string sql){
             _sql = sql;
         }
-       
+
         public SqlQuery(string sql, DbContext context) : this(){
             _sql = sql;
             _context = context;
         }
 
-        
+
         public T1 To<T1>(){
             return default(T1);
         }
@@ -87,11 +88,11 @@ namespace DbLight.Sql
             Connection = connection;
             _context = context;
         }
-        
+
         public SqlQuery(string sql){
             _sql = sql;
         }
-       
+
         public SqlQuery(string sql, DbContext context) : this(){
             _sql = sql;
             _context = context;
@@ -131,9 +132,10 @@ namespace DbLight.Sql
             return Select(column, childQuery.ToString());
         }
 
-        public SqlQuery<T> Select<T1, T2>(Expression<Func<T, T1>> column, 
+        public SqlQuery<T> Select<T1, T2>(Expression<Func<T, T1>> column,
             string expression, Expression<Func<T, T2>> parameters){
-            return Select(column, DbExpressionHelper.ReadQueryAnyExpression(Connection, ModelInfo, expression, parameters));
+            return Select(column,
+                DbExpressionHelper.ReadQueryAnyExpression(Connection, ModelInfo, expression, parameters));
         }
 
         public SqlQuery<T> Select<T1>(Expression<Func<T, T1>> column, string expression){
@@ -308,11 +310,11 @@ namespace DbLight.Sql
 
             return this;
         }
-        
+
         public DataTable ToDataTable(){
             return _context.ExecQueryToDataTable(ToString());
         }
-        
+
         public new Task<DataTable> ToDataTableAsync(){
             return _context.ExecQueryToDataTableAsync(ToString());
         }
@@ -332,6 +334,23 @@ namespace DbLight.Sql
         public List<TResult> ToList<TResult>(Func<T, TResult> converter){
             return _context.ExecQueryToList(ToString(), converter);
         }
+
+        public async Task<T> ToFirstAsync(){
+            return (await ToListAsync()).FirstOrDefault();
+        }
+
+        public async Task<TResult> ToFirstAsync<TResult>(Func<T, TResult> converter){
+            return (await ToListAsync(converter)).FirstOrDefault();
+        }
+
+        public T ToFirst(){
+            return ToList().FirstOrDefault();
+        }
+
+        public TResult ToFirst<TResult>(Func<T, TResult> converter){
+            return ToList(converter).FirstOrDefault();
+        }
+
 
         public new T1 To<T1>(){
             return default(T1);

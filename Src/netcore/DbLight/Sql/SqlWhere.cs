@@ -60,7 +60,8 @@ namespace DbLight.Sql
                 if (JoinType == SqlWhereJoinType.And && x.ToUpper().IndexOf(" OR ", StringComparison.Ordinal) >= 0){
                     needBracket = true;
                 }
-                else if (JoinType == SqlWhereJoinType.Or && x.ToUpper().IndexOf(" AND ", StringComparison.Ordinal) >= 0){
+                else if (JoinType == SqlWhereJoinType.Or &&
+                         x.ToUpper().IndexOf(" AND ", StringComparison.Ordinal) >= 0){
                     needBracket = true;
                 }
 
@@ -97,7 +98,7 @@ namespace DbLight.Sql
         }
     }
 
-    public class SqlWhere<TP, T> : SqlWhere where TP : class 
+    public class SqlWhere<TP, T> : SqlWhere where TP : class
     {
         private readonly TP _parent;
 
@@ -138,6 +139,83 @@ namespace DbLight.Sql
             return this;
         }
 
+        public SqlWhere<TP, T> Compare<T2>(Expression<Func<T, T2>> expression, SqlCompareType compareType, T2 value){
+            ExpressionType expressionType;
+            switch (compareType){
+                case SqlCompareType.Equal:
+                    expressionType = ExpressionType.Equal;
+                    break;
+                case SqlCompareType.NotEqual:
+                    expressionType = ExpressionType.NotEqual;
+                    break;
+                case SqlCompareType.Greater:
+                    expressionType = ExpressionType.GreaterThan;
+                    break;
+                case SqlCompareType.Less:
+                    expressionType = ExpressionType.LessThan;
+                    break;
+                case SqlCompareType.GreaterOrEqual:
+                    expressionType = ExpressionType.GreaterThanOrEqual;
+                    break;
+                case SqlCompareType.LessOrEqual:
+                    expressionType = ExpressionType.LessThanOrEqual;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(compareType), compareType, null);
+            }
+
+            if (WhereType == SqlWhereType.Query){
+                AddWhere(DbExpressionHelper.ReadQueryWhereCompareExpression(Connection, ModelInfo,
+                    expression, expressionType, value));
+            }
+            else{
+                AddWhere(DbExpressionHelper.ReadEditWhereCompareExpression(Connection, ModelInfo,
+                    expression, expressionType, value));
+            }
+
+            return this;
+        }
+
+        public SqlWhere<TP, T> Like(Expression<Func<T, string>> expression, SqlLikeType likeType, string value){
+            DbWhereLikeType expressionType;
+            switch (likeType){
+                case SqlLikeType.Before:
+                    expressionType = DbWhereLikeType.Before;
+                    break;
+                case SqlLikeType.After:
+                    expressionType = DbWhereLikeType.After;
+                    break;
+                case SqlLikeType.Middle:
+                    expressionType = DbWhereLikeType.Middle;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(likeType), likeType, null);
+            }
+
+            if (WhereType == SqlWhereType.Query){
+                AddWhere(DbExpressionHelper.ReadQueryWhereLikeExpression(Connection, ModelInfo,
+                    expression, expressionType, value));
+            }
+            else{
+                AddWhere(DbExpressionHelper.ReadEditWhereLikeExpression(Connection, ModelInfo,
+                    expression, expressionType, value));
+            }
+
+            return this;
+        }
+
+        public SqlWhere<TP, T> In<T2>(Expression<Func<T, T2>> expression, IEnumerable<T2> values){
+            if (WhereType == SqlWhereType.Query){
+                AddWhere(DbExpressionHelper.ReadQueryWhereInExpression(Connection, ModelInfo,
+                    expression, values));
+            }
+            else{
+                AddWhere(DbExpressionHelper.ReadEditWhereInExpression(Connection, ModelInfo,
+                    expression, values));
+            }
+            return this;
+        }
+
         public SqlWhere<TP, T> Add(string expression){
             AddWhere(expression);
             return this;
@@ -150,6 +228,7 @@ namespace DbLight.Sql
             else{
                 AddWhere(DbExpressionHelper.ReadEditAnyExpression(Connection, ModelInfo, expression, parameters));
             }
+
             return this;
         }
 
@@ -184,5 +263,22 @@ namespace DbLight.Sql
         Query,
         Delete,
         Update
+    }
+
+    public enum SqlCompareType
+    {
+        Equal,
+        NotEqual,
+        Greater,
+        Less,
+        GreaterOrEqual,
+        LessOrEqual
+    }
+
+    public enum SqlLikeType
+    {
+        Before,
+        After,
+        Middle,
     }
 }
