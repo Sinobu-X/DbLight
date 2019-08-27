@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Reflection;
 using DbLight.DataAnnotations;
 
@@ -7,7 +7,7 @@ namespace DbLight.Common
 {
     public class DbModelHelper
     {
-        private static Dictionary<Type, DbModelInfo> _modelCaches = new Dictionary<Type, DbModelInfo>();
+        private static ConcurrentDictionary<Type, DbModelInfo> _modelCaches = new ConcurrentDictionary<Type, DbModelInfo>();
         
         public static bool IsTuple(Type tuple){
             if (!tuple.IsGenericType){
