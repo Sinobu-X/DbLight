@@ -43,6 +43,7 @@ namespace DbLight.Common
                 m.Type == typeof(string) ||
                 m.Type == typeof(decimal) ||
                 m.Type == typeof(DateTime) ||
+                m.Type == typeof(DateTime?) ||
                 m.Type == typeof(byte[])){
                 m.Kind = DbModelKind.Value;
             }
