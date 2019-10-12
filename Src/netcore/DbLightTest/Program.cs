@@ -25,9 +25,21 @@ namespace DbLightTest
                 "server=127.0.0.1;uid=sa;pwd=test;database=EFDemo;Connect Timeout=900");
             connection.Groups.Add(("Demo", "EFDemo"));
 
+
             var need = true;
 
             while (true){
+                Task.Run(async () => {
+                    try{
+                        await Test_MaxId(connection);
+                    }
+                    catch (Exception e){
+                        Console.WriteLine(e);
+                        throw;
+                    }
+                });
+
+
                 //TestSyncSpeed(dbcn);
 //                if (need) {
 //                   for(var i = 0; i < 100; i++) {
@@ -72,6 +84,31 @@ namespace DbLightTest
             //Console.Read();
         }
 
+        class Abc
+        {
+            public int MaxId{ get; set; }
+        }
+
+        static async Task Test_MaxId(DbConnection connection){
+            using (var db = new DbContext(connection)){
+                var sql = db.Query<Abc>()
+                    .Select(x => x.MaxId, "MAX(TxnId)")
+                    .From(x => x, "ddd")
+                    .WhereBegin()
+                    .Add("ABC = 4")
+                    .WhereEnded()
+                    .ToString();
+
+//                var sql = db.Query<(Post Post, Blog Blog)>()
+//                    .LeftJoin(x => x.Blog, x => x.Post.BlogId == x.Blog.BlogId)
+//                    .LeftJoin(x => x.Blog, x => x.Post.BlogId == x.Blog.BlogId)
+//                    .ToString();
+//
+
+                Console.WriteLine(sql);
+            }
+        }
+
         static async Task Test_WhereEqual(DbConnection connection){
             var db = new DbContext(connection);
 
@@ -104,7 +141,7 @@ namespace DbLightTest
 
             sw.Stop();
             Console.WriteLine($"Time = {sw.ElapsedMilliseconds}");
-            
+
             sw.Reset();
             sw.Start();
             for (var i = 0; i < times; i++){
@@ -126,7 +163,7 @@ namespace DbLightTest
 
             sw.Stop();
             Console.WriteLine($"Time = {sw.ElapsedMilliseconds}");
-            
+
             sw.Reset();
             sw.Start();
             for (var i = 0; i < times; i++){

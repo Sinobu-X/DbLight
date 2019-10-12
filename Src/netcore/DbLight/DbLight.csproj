@@ -14,7 +14,7 @@
     <Folder Include="Mapping\" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.6.1" PrivateAssets="All" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.6.1" />
   </ItemGroup>
   <ItemGroup>
     <None Include="LICENSE.txt" />

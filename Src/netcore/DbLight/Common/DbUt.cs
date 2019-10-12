@@ -90,7 +90,7 @@ namespace DbLight.Common
             }
             else if (value is DateTime dv){
                 if (connection.DbType == DbDatabaseType.SqlServer){
-                    return dv.ToString("'yyyy-MM-dd HH:mm:ss'");
+                    return dv.ToString("yyyy-MM-dd HH:mm:ss");
                 }
                 else{
                     throw new DbUnexpectedDbTypeException();
