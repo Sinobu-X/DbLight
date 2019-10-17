@@ -56,7 +56,7 @@ namespace DbLightTest
                     .Where(x => x.PostId > 3 &&
                                 db.ChildQuery<Blog>()
                                     .Select(y => y.BlogId)
-                                    .Where(y => y.Rating > 0).In(x.BlogId))
+                                    .Where(y => y.Rating > 0).Contains(x.BlogId))
                     .ToString();
 
                 Console.WriteLine(sql);
@@ -71,7 +71,7 @@ namespace DbLightTest
                         .WhereBegin(SqlWhereJoinType.And)
                         .Compare(y => y.Rating, SqlCompareType.Greater, 0)
                         .WhereEnded()
-                        .In(x.BlogId))
+                        .Contains(x.BlogId))
                     .WhereEnded()
                     .ToString();
 

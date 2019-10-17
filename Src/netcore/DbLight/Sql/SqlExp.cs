@@ -12,7 +12,7 @@ namespace DbLight.Sql
             return default(T);
         }
 
-        public bool In<T>(T value){
+        public bool Contains<T>(T value){
             return true;
         }
 

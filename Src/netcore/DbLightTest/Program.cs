@@ -25,7 +25,7 @@ namespace DbLightTest
                 "server=127.0.0.1;uid=test;pwd=test;database=EFDemo;Connect Timeout=900");
             connection.Groups.Add(("Demo", "EFDemo"));
             
-//            DemoIn.InArray(connection);
+            DemoIn.InArray(connection);
             DemoIn.InQuery(connection);
 //            DemoMax.MaxId(connection);
 
@@ -238,7 +238,7 @@ namespace DbLightTest
                     //.Where(x => x.BlogId == db.ChildQuery<Blog>().Max(y => y.BlogId).To<int>())
                     //.Where(x => x.BlogId == db.Exp("SELECT MAX(xx)").To<int>())
                     //.Where(x => db.ChildQuery("SELECT XXX").In(x.BlogId))
-                    .Where(x => db.Exp("SELECT MAX(xx)").In(x.BlogId) &&
+                    .Where(x => db.Exp("SELECT MAX(xx)").Contains(x.BlogId) &&
                                 x.Title.Contains("xx") &&
                                 x.Title.StartsWith("s") &&
                                 x.Title.EndsWith("f") &&
@@ -373,7 +373,7 @@ namespace DbLightTest
 //                    .Where(x => x.BlogId >= db.ChildQuery<Post>().Max(y => y.BlogId).ToValue<int>())
                     .Where(x => x.BlogId >= db.ChildQuery("SELECT BlogId FROM Blogs").To<int>())
                     .Where(x => x.BlogId >= db.Exp("SELECT BlogId FROM Blogs").To<int>())
-                    .Where(x => db.Exp("SELECT BlogId FROM Blogs").In(x.BlogId))
+                    .Where(x => db.Exp("SELECT BlogId FROM Blogs").Contains(x.BlogId))
 //                    .WhereBegin(SqlWhereJoinType.Or)
 //                    .Add(x => x.BlogId > 4)
 //                    .Add(x => x.Enable == true)

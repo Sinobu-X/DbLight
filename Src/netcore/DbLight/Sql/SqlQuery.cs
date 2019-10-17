@@ -41,7 +41,7 @@ namespace DbLight.Sql
             return default(T1);
         }
 
-        public bool In<T1>(T1 value){
+        public bool Contains<T1>(T1 value){
             return true;
         }
 
@@ -356,7 +356,7 @@ namespace DbLight.Sql
             return default(T1);
         }
 
-        public new bool In<T1>(T1 value){
+        public new bool Contains<T1>(T1 value){
             return true;
         }
 

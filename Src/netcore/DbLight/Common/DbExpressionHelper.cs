@@ -1041,18 +1041,19 @@ namespace DbLight.Common
                     throw GetCallException(expression);
                 }
             }
-            else if (expression.Arguments.Count == 1 && expression.Object != null && expression.Method.Name == "In"){
+            else if (expression.Arguments.Count == 1 && expression.Object != null &&
+                     expression.Method.Name == "Contains"){
                 if (expression.Object.Type == typeof(SqlQuery) ||
                     expression.Object.Type.IsSubclassOf(typeof(SqlQuery))){
-                    //SqlQuery.In(x.Id)
+                    //SqlQuery.Contains(x.Id)
                     var query = Expression.Lambda(expression.Object).Compile().DynamicInvoke() as SqlQuery;
                     if (query == null){
-                        throw new DbUnknownException("Unexpected SqlQuery Expression for Method SqlQuery.To()\n" +
+                        throw new DbUnknownException("Unexpected SqlQuery Expression for Method SqlQuery.Contains()\n" +
                                                      "Expression: " + expression);
                     }
 
                     if (!DbExpressionHelper.IsModelExpression(expression.Arguments[0])){
-                        throw new Exception("The parameter must be a column in SqlQuery.In()\n" +
+                        throw new Exception("The parameter must be a column in SqlQuery.Contains()\n" +
                                             "Expression: " + expression);
                     }
 
@@ -1060,29 +1061,22 @@ namespace DbLight.Common
                     return string.Format("{0} IN({1})", column, query.ToString());
                 }
                 else if (expression.Object.Type == typeof(SqlExp)){
-                    //SqlExp.In(x.Id)
+                    //SqlExp.Contains(x.Id)
                     var exp = Expression.Lambda(expression.Object).Compile().DynamicInvoke() as SqlExp;
                     if (exp == null){
-                        throw new DbUnknownException("Unexpected SqlExp Expression for Method SqlExp.To()\n" +
+                        throw new DbUnknownException("Unexpected SqlExp Expression for Method SqlExp.Contains()\n" +
                                                      "Expression: " + expression);
                     }
 
                     if (!DbExpressionHelper.IsModelExpression(expression.Arguments[0])){
-                        throw new Exception("The parameter must be a column in SqlExp.In()\n" +
+                        throw new Exception("The parameter must be a column in SqlExp.Contains()\n" +
                                             "Expression: " + expression);
                     }
 
                     var column = ColumnToSql(expression.Arguments[0]);
                     return string.Format("{0} IN({1})", column, exp.ToString());
                 }
-                else{
-                    throw GetCallException(expression);
-                }
-            }
-            else if (expression.Arguments.Count == 1
-                     && expression.Object != null
-                     && expression.Method.Name == "Contains"){
-                if (DbExpressionHelper.IsModelExpression(expression.Object)){
+                else if (DbExpressionHelper.IsModelExpression(expression.Object)){
                     //x.Name.Contains("xx")
                     var value = Expression.Lambda(expression.Arguments[0]).Compile().DynamicInvoke();
                     if (value is string str){
@@ -1179,9 +1173,9 @@ namespace DbLight.Common
                                  "string.EndsWith\n" +
                                  "string.EndsWith\n" +
                                  "SqlQuery.To()\n" +
-                                 "SqlQuery.In()\n" +
+                                 "SqlQuery.Contains()\n" +
                                  "SqlExp.To()\n" +
-                                 "SqlExp.In()\n" +
+                                 "SqlExp.Contains()\n" +
                                  "Expression: " + expression);
         }
     }
