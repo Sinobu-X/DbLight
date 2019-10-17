@@ -15,7 +15,7 @@ namespace DbLightTest
         public string Url{ get; set; } = "";
         public int Rating{ get; set; }
         [Column("Active")] public bool Enable{ get; set; }
-        public DateTime OpenTime{ get; set; } = DateTime.MinValue;
+        public DateTime? OpenTime{ get; set; }
 
         [NotMapped] public string Remark => string.Format("#{0} is {1}", BlogId, Enable ? "Active" : "Inactive");
         public Author PostAuthor{ get; set; } = new Author();
@@ -29,6 +29,7 @@ namespace DbLightTest
         public int BlogId{ get; set; }
         public int AuthorId{ get; set; }
         public decimal Price{ get; set; }
+        
         public Blog PostBlog{ get; set; } = new Blog();
         public Author PostAuthor{ get; set; } = new Author();
     }

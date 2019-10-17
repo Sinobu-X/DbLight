@@ -18,68 +18,72 @@ namespace DbLightTest
     {
         private static readonly log4net.ILog _log = log4net.LogManager.GetLogger(typeof(Program));
 
-        static void Main(string[] args){
+        private static void Main(string[] args){
             _log.Info("App Running...");
 
             var connection = new DbConnection(DbDatabaseType.SqlServer,
-                "server=127.0.0.1;uid=sa;pwd=test;database=EFDemo;Connect Timeout=900");
+                "server=127.0.0.1;uid=test;pwd=test;database=EFDemo;Connect Timeout=900");
             connection.Groups.Add(("Demo", "EFDemo"));
+            
+//            DemoIn.InArray(connection);
+            DemoIn.InQuery(connection);
+//            DemoMax.MaxId(connection);
 
 
-            var need = true;
-
-            while (true){
-                Task.Run(async () => {
-                    try{
-                        await Test_MaxId(connection);
-                    }
-                    catch (Exception e){
-                        Console.WriteLine(e);
-                        throw;
-                    }
-                });
-
-
-                //TestSyncSpeed(dbcn);
-//                if (need) {
-//                   for(var i = 0; i < 100; i++) {
-//                        TestSqlSync(dbcn);
+//            var need = true;
+//
+//            while (true){
+//                Task.Run(async () => {
+//                    try{
+//                        await Test_MaxId(connection);
 //                    }
+//                    catch (Exception e){
+//                        Console.WriteLine(e);
+//                        throw;
+//                    }
+//                });
+//
+//
+//                //TestSyncSpeed(dbcn);
+////                if (need) {
+////                   for(var i = 0; i < 100; i++) {
+////                        TestSqlSync(dbcn);
+////                    }
+////                }
+//
+////                var w = new Stopwatch();
+////                w.Start();
+////                Test_SqlQuery_LeftJoin_Sync(dbcn);
+////                w.Stop();
+////                Console.WriteLine("T = " + w.ElapsedMilliseconds);
+//
+//                //Test_QueryForSingleTable(connection).Wait();
+//
+//                //TestQueryBySql(dbcn).Wait();
+//                //TestReflection();
+//
+//                //TestQueryLeftJoin(dbcn).Wait();
+//                //TestObjectQueryBySql(dbcn).Wait();
+//
+//                //TestExpressionHelper();
+//
+//                //Test_WhereEqual(connection).Wait();
+//
+//                var command = Console.ReadLine().ToUpper();
+//                if (command == "R"){
+//                    need = true;
+//                    continue;
 //                }
-
-//                var w = new Stopwatch();
-//                w.Start();
-//                Test_SqlQuery_LeftJoin_Sync(dbcn);
-//                w.Stop();
-//                Console.WriteLine("T = " + w.ElapsedMilliseconds);
-
-                //Test_QueryForSingleTable(connection).Wait();
-
-                //TestQueryBySql(dbcn).Wait();
-                //TestReflection();
-
-                //TestQueryLeftJoin(dbcn).Wait();
-                //TestObjectQueryBySql(dbcn).Wait();
-
-                //TestExpressionHelper();
-
-                //Test_WhereEqual(connection).Wait();
-
-                var command = Console.ReadLine().ToUpper();
-                if (command == "R"){
-                    need = true;
-                    continue;
-                }
-                else if (command == "CLEAR"){
-                    Console.Clear();
-                }
-                else if (command == "GC"){
-                    GC.Collect();
-                }
-                else{
-                    break;
-                }
-            }
+//                else if (command == "CLEAR"){
+//                    Console.Clear();
+//                }
+//                else if (command == "GC"){
+//                    GC.Collect();
+//                }
+//                else{
+//                    break;
+//                }
+//            }
 
             //Console.Read();
         }

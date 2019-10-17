@@ -680,7 +680,7 @@ namespace DbLight.Common
                                                  "Expression Type: " + expressionType);
             }
 
-            return $"{column} {connect} {DbUt.ValueToWhereSql(_connection, value)}";
+            return $"{column}{connect}{DbUt.ValueToWhereSql(_connection, value)}";
         }
 
         public string ToLikeSql(DbWhereLikeType likeType, string value){
