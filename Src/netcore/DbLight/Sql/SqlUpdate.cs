@@ -19,6 +19,7 @@ namespace DbLight.Sql
         private readonly DbTableModelInfo _from;
         private T _item;
         private readonly List<DbColumnModelInfo> _columns = new List<DbColumnModelInfo>();
+        private readonly List<string> _expressions = new List<string>();
         private bool _closeIdentify;
         private string _whereExpress;
         private SqlWhere<SqlUpdate<T>, T> _where;
@@ -65,7 +66,7 @@ namespace DbLight.Sql
                     selectItems.RemoveAt(i);
                 }
             }
-            
+
             foreach (var item in selectItems){
                 _columns.Add(item);
             }
@@ -73,12 +74,17 @@ namespace DbLight.Sql
             return this;
         }
 
+        public SqlUpdate<T> Select<T1>(string expression, Expression<Func<T, T1>> parameters){
+            _expressions.Add(DbExpressionHelper.ReadEditAnyExpression(Connection, ModelInfo, expression, parameters));
+            return this;
+        }
+
         public SqlUpdate<T> CloseIdentify(){
             _closeIdentify = true;
             return this;
         }
-        
-        
+
+
         public SqlUpdate<T> SetData(T item){
             _item = item;
             return this;
@@ -102,7 +108,7 @@ namespace DbLight.Sql
         public Task<int> ExecuteAsync(){
             return _context.ExecNoQueryAsync(ToString());
         }
-        
+
         public int Execute(){
             return _context.ExecNoQuery(ToString());
         }
@@ -121,7 +127,7 @@ namespace DbLight.Sql
             }
 
             members = members.FindAll(x => {
-                if (!_columns.Exists(y => y.Column.ToUpper() == x.ColumnName.ToUpper())){
+                if (!_columns.Exists(y => string.Equals(y.Column, x.ColumnName, StringComparison.OrdinalIgnoreCase))){
                     return false;
                 }
 
@@ -160,6 +166,12 @@ namespace DbLight.Sql
                     sql.Append(string.Format("[{0}] = {1}",
                         column.ColumnName,
                         DbUt.ValueToSetSql(Connection, value)));
+                }
+
+                foreach (var expression in _expressions){
+                    sql.Append(isFirst ? "" : ", ");
+                    isFirst = false;
+                    sql.Append(expression);
                 }
             }
 
