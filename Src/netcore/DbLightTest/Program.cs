@@ -24,8 +24,9 @@ namespace DbLightTest
             var connection = new DbConnection(DbDatabaseType.SqlServer,
                 "server=127.0.0.1;uid=test;pwd=test;database=EFDemo;Connect Timeout=900");
             connection.Groups.Add(("Demo", "EFDemo"));
-            
-            DemoUpdate.Express(connection);
+
+            DemoJoin.OutMultipleTable(connection);
+//            DemoUpdate.Express(connection);
 //            DemoIn.InArray(connection);
 //            DemoIn.InQuery(connection);
 //            DemoMax.MaxId(connection);
