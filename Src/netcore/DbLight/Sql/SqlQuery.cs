@@ -264,6 +264,26 @@ namespace DbLight.Sql
             return LeftJoin(table, childQuery.ToString(), on);
         }
 
+        public SqlQuery<T> InnerJoin<T1>(Expression<Func<T, T1>> table, Expression<Func<T, bool>> on){
+            var tableName = DbExpressionHelper.ReadTableExpression(table, ModelInfo);
+            var onSql = DbExpressionHelper.ReadQueryWhereExpression(Connection, ModelInfo, on);
+            AddJoin(JoinType.InnerJoin, tableName, null, onSql);
+            return this;
+        }
+
+        public SqlQuery<T> InnerJoin<T1>(Expression<Func<T, T1>> table, string expression,
+            Expression<Func<T, bool>> on){
+            var tableName = DbExpressionHelper.ReadTableExpression(table, ModelInfo);
+            var onSql = DbExpressionHelper.ReadQueryWhereExpression(Connection, ModelInfo, on);
+            AddJoin(JoinType.InnerJoin, tableName, expression, onSql);
+            return this;
+        }
+
+        public SqlQuery<T> InnerJoin<T1>(Expression<Func<T, T1>> table, SqlQuery childQuery,
+            Expression<Func<T, bool>> on){
+            return InnerJoin(table, childQuery.ToString(), on);
+        }
+
         public SqlQuery<T> WithNoLock(){
             _withNoLock = true;
             return this;
