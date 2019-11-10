@@ -14,5 +14,8 @@ namespace DbLight.Common
 
         string ToLikeSql(string express, DbWhereLikeType likeType, string value);
 
+        string TopSqlTop(int top);
+        string TopSqlWhere(int top);
+        string TopSqlLimit(int top);
     }
 }

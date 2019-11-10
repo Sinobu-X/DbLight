@@ -17,9 +17,11 @@ namespace DbLight
         public DbContext(DbConnection connection){
             if (connection.DbType == DbDatabaseType.SqlServer){
                 _inner = new Provider.MSSQL.DbContextInner(connection);
+                return;
             }
             else if (connection.DbType == DbDatabaseType.Postgres){
                 _inner = new Provider.Postgres.DbContextInner(connection);
+                return;
             }
 
             throw new DbUnexpectedDbTypeException();

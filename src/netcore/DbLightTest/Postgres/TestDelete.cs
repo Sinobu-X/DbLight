@@ -65,5 +65,7 @@ namespace DbLightTest.Postgres
             var count = await del.ExecuteAsync();
             Console.WriteLine($"Count = {count}");
         }
+
+
     }
 }

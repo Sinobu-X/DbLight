@@ -394,12 +394,17 @@ namespace DbLight.Sql
             //SELECT
             sql.Append("SELECT");
 
-            if (_distinct){
-                sql.Append(" DISTINCT");
+            //TOP
+            if (_top > 0){
+                var sub = DbSql.TopSqlTop(Connection, _top);
+                if (!string.IsNullOrEmpty(sub)){
+                    sql.Append(sub);
+                }
             }
 
-            if (_top > 0){
-                sql.Append(" TOP " + _top);
+            //DISTINCT
+            if (_distinct){
+                sql.Append(" DISTINCT");
             }
 
             //COLUMNS
@@ -433,8 +438,8 @@ namespace DbLight.Sql
                             DbSql.GetColumnName(Connection, displayName));
                     }
                     else{
-                        subSql = string.Format("{0} AS {1}",
-                            DbSql.GetColumnName(Connection, column.Expression),
+                        subSql = string.Format("({0}) AS {1}",
+                            column.Expression,
                             DbSql.GetColumnName(Connection, displayName));
                     }
 
@@ -500,16 +505,35 @@ namespace DbLight.Sql
             });
 
             //WHERE
+            var hasWhere = false;
             if (_where != null){
                 var s = _where.ToString();
                 if (s != ""){
                     sql.Append(" WHERE ");
                     sql.Append(s);
+                    hasWhere = true;
                 }
             }
             else if (!string.IsNullOrEmpty(_whereExpress)){
                 sql.Append(" WHERE ");
                 sql.Append(_whereExpress);
+                hasWhere = true;
+            }
+
+            //TOP WHERE
+            if (_top > 0){
+                var sub = DbSql.TopSqlWhere(Connection, _top);
+                if (!string.IsNullOrEmpty(sub)){
+                    if (hasWhere){
+                        sql.Append(" AND ");
+                        sql.Append(sub);
+                    }
+                    else{
+                        sql.Append(" WHERE ");
+                        sql.Append(sub);
+//                        hasWhere = true;
+                    }
+                }
             }
 
             //GROUP BY
@@ -551,6 +575,14 @@ namespace DbLight.Sql
                     sql.Append(isFirstAdd ? " " : ", ");
                     sql.Append(subSql);
                     isFirstAdd = false;
+                }
+            }
+
+            //TOP LIMIT
+            if (_top > 0){
+                var sub = DbSql.TopSqlLimit(Connection, _top);
+                if (!string.IsNullOrEmpty(sub)){
+                    sql.Append(sub);
                 }
             }
 

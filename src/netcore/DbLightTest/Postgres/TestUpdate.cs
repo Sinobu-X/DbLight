@@ -69,5 +69,59 @@ namespace DbLightTest.Postgres
             var count = await del.ExecuteAsync();
             Console.WriteLine($"Count = {count}");
         }
+
+        [Test]
+        public async Task IgnoreColumn(){
+            var db = new DbContext(GetConnection());
+
+            var user = new User();
+            user.UserId = 12;
+            user.UserName = "Name " + user.UserId;
+            user.WeChatCode = "WeChat " + user.UserId;
+            user.Phone = "130-" + user.UserId;
+            user.Birthday = DateTime.Now.AddYears(-10);
+            user.Height = 0.07m;
+            user.Income = 0.14m;
+            user.Married = true;
+            user.Remark = "人的";
+            user.RegisterTime = DateTime.Now;
+            user.SexId = 2;
+
+            var del = db.Update(user)
+                .Select(x => x, x => new{
+                    x.UserId,
+                    x.Photo
+                })
+                .Where(x => x.UserId == 12);
+
+            Console.WriteLine(del.ToString());
+
+            var count = await del.ExecuteAsync();
+            Console.WriteLine($"Count = {count}");
+        }
+
+        [Test]
+        public async Task UpdateExpress(){
+            var db = new DbContext(GetConnection());
+
+            var user = new User();
+            user.UserId = 12;
+            user.UserName = "Name " + user.UserId;
+            user.SexId = 2;
+
+            var del = db.Update(user)
+                .Select(x => new {
+                    x.UserName,
+                    x.Height,
+                    x.SexId
+                })
+                .Select("{0} = {0} + 100.00::money", x => x.Income)
+                .Where(x => x.UserId == 12);
+
+            Console.WriteLine(del.ToString());
+
+            var count = await del.ExecuteAsync();
+            Console.WriteLine($"Count = {count}");
+        }
     }
 }

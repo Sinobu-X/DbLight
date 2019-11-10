@@ -39,7 +39,7 @@ namespace DbLight.Provider.Postgres
 
         private string ValueToSql(object value){
             if (value is string vs){
-                return "'" + vs.Replace("'", "''") + "'";
+                return $"'{vs.Replace("'", "''")}'";
             }
             else if (value is int){
                 return value.ToString();
@@ -61,7 +61,7 @@ namespace DbLight.Provider.Postgres
                 return "decode('" + BitConverter.ToString(bytes).Replace("-", "") + "', 'hex')";
             }
             else{
-                throw new DbUnexpectedDbTypeException();
+                throw new DbUnknownException($"{value} Not Supports.");
             }
         }
 
@@ -74,14 +74,25 @@ namespace DbLight.Provider.Postgres
                 case DbWhereLikeType.Middle:
                     return $"'%{value.Replace("'", "''")}%'";
                 default:
-                    throw new DbUnknownException("Unexpected Like Type.\n" +
-                                                 "Like Type: " + likeType);
+                    throw new DbUnknownException("Unexpected Like Type.\n" + "Like Type: " + likeType);
             }
         }
 
         public string ToLikeSql(string express, DbWhereLikeType likeType, string value){
             var likeValue = ValueToLikeSql(likeType, value);
-            return $"{express} LIKE {likeValue}";
+            return $"{express} ILIKE {likeValue}";
+        }
+
+        public string TopSqlTop(int top){
+            return null;
+        }
+
+        public string TopSqlWhere(int top){
+            return null;
+        }
+
+        public string TopSqlLimit(int top){
+            return " LIMIT " + top;
         }
     }
 }

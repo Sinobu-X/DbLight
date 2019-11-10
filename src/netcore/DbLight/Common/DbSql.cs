@@ -1,5 +1,4 @@
-﻿
-using DbLight.Exceptions;
+﻿using DbLight.Exceptions;
 
 namespace DbLight.Common
 {
@@ -51,6 +50,18 @@ namespace DbLight.Common
         internal static string ToLikeSql(DbConnection connection, string express, DbWhereLikeType likeType,
             string value){
             return GetInner(connection).ToLikeSql(express, likeType, value);
+        }
+
+        internal static string TopSqlTop(DbConnection connection, int top){
+            return GetInner(connection).TopSqlTop(top);
+        }
+
+        internal static string TopSqlWhere(DbConnection connection, int top){
+            return GetInner(connection).TopSqlWhere(top);
+        }
+
+        internal static string TopSqlLimit(DbConnection connection, int top){
+            return GetInner(connection).TopSqlLimit(top);
         }
     }
 }

@@ -84,5 +84,17 @@ namespace DbLight.Provider.MSSQL
             var likeValue = ValueToLikeSql(likeType, value);
             return $"{express} LIKE {likeValue}";
         }
+
+        public string TopSqlTop(int top){
+            return " TOP " + top;
+        }
+
+        public string TopSqlWhere(int top){
+            return null;
+        }
+
+        public string TopSqlLimit(int top){
+            return null;
+        }
     }
 }
