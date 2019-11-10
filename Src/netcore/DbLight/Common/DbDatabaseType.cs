@@ -5,6 +5,8 @@ namespace DbLight.Common
     {
         SqlServer = 0,
         Access = 1,
-        Oracle = 2
+        Oracle = 2,
+        Postgres = 3,
+        MySql = 4
     }
 }

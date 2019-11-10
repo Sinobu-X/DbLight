@@ -18,7 +18,7 @@ namespace DbLightTest
     {
         private static readonly log4net.ILog _log = log4net.LogManager.GetLogger(typeof(Program));
 
-        private static void Main(string[] args){
+        private static void MainOld(string[] args){
             _log.Info("App Running...");
 
             var connection = new DbConnection(DbDatabaseType.SqlServer,

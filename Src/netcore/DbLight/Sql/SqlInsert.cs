@@ -20,17 +20,19 @@ namespace DbLight.Sql
         private readonly T _item;
         private readonly List<DbColumnModelInfo> _ignoreColumns = new List<DbColumnModelInfo>();
         private bool _closeIdentify;
-        
+
         private SqlInsert(){
             ModelInfo = DbModelHelper.GetModelInfo(typeof(T));
             _from = new DbTableModelInfo();
 
             if (ModelInfo.Kind == DbModelKind.Tuple){
                 _from.Table = ModelInfo.Members[0].Model.TableName;
+                _from.Schema = ModelInfo.Members[0].Model.SchemaName;
                 _from.Database = ModelInfo.Members[0].Model.DatabaseName;
             }
             else{
                 _from.Table = ModelInfo.TableName;
+                _from.Schema = ModelInfo.SchemaName;
                 _from.Database = ModelInfo.DatabaseName;
             }
         }
@@ -60,11 +62,11 @@ namespace DbLight.Sql
             _closeIdentify = true;
             return this;
         }
-        
+
         public Task<int> ExecuteAsync(){
             return _context.ExecNoQueryAsync(ToString());
         }
-        
+
         public int Execute(){
             return _context.ExecNoQuery(ToString());
         }
@@ -83,7 +85,7 @@ namespace DbLight.Sql
             }
 
             members = members.FindAll(x => {
-                if (_ignoreColumns.Exists(y => y.Column.ToUpper() == x.ColumnName.ToUpper())){
+                if (_ignoreColumns.Exists(y => y.Column.Equals(x.ColumnName, StringComparison.OrdinalIgnoreCase))){
                     return false;
                 }
 
@@ -108,19 +110,18 @@ namespace DbLight.Sql
             sql.Append("INSERT INTO ");
 
             //TABLE
-            sql.Append(Connection.GetTableFullName(_from.Database, _from.Table));
-
+            sql.Append(DbUt.GetTableName(Connection, _from.Database, _from.Schema, _from.Table));
 
             //COLUMNS BEGIN
             sql.Append("(");
 
             //COLUMNS
             {
-                bool isFirst = true;
+                var isFirst = true;
                 foreach (var column in members){
                     sql.Append(isFirst ? "" : ", ");
                     isFirst = false;
-                    sql.Append(string.Format("[{0}]", column.ColumnName));
+                    sql.Append(DbUt.GetColumnName(Connection, column.ColumnName));
                 }
             }
             sql.Append("");
@@ -130,7 +131,7 @@ namespace DbLight.Sql
 
             //VALUES
             {
-                bool isFirst = true;
+                var isFirst = true;
                 foreach (var column in members){
                     sql.Append(isFirst ? "" : ", ");
                     isFirst = false;

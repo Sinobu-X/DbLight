@@ -212,11 +212,13 @@ namespace DbLight.Sql
             if (ModelInfo.Kind == DbModelKind.Tuple){
                 _from.Member = ModelInfo.Members[0].ColumnName;
                 _from.Table = ModelInfo.Members[0].Model.TableName;
+                _from.Schema = ModelInfo.Members[0].Model.SchemaName;
                 _from.Database = ModelInfo.Members[0].Model.DatabaseName;
             }
             else{
                 _from.Member = "a";
                 _from.Table = ModelInfo.TableName;
+                _from.Schema = ModelInfo.SchemaName;
                 _from.Database = ModelInfo.DatabaseName;
             }
 
@@ -427,11 +429,15 @@ namespace DbLight.Sql
                     }
 
                     if (column.Expression == null){
-                        subSql = string.Format("[{0}].[{1}] AS [{2}]", column.Column.Member, column.Column.Column,
-                            displayName);
+                        subSql = string.Format("{0}.{1} AS {2}",
+                            DbUt.GetColumnName(Connection, column.Column.Member),
+                            DbUt.GetColumnName(Connection, column.Column.Column),
+                            DbUt.GetColumnName(Connection, displayName));
                     }
                     else{
-                        subSql = string.Format("({0}) AS [{1}]", column.Expression, displayName);
+                        subSql = string.Format("{0} AS {1}",
+                            DbUt.GetColumnName(Connection, column.Expression),
+                            DbUt.GetColumnName(Connection, displayName));
                     }
 
                     sql.Append(isFirstAdd ? " " : ", ");
@@ -441,18 +447,18 @@ namespace DbLight.Sql
             }
 
             //FROM
-            sql.Append(" FROM");
+            sql.Append(" FROM ");
 
             {
                 if (_fromExpression == null){
-                    sql.Append(string.Format(" {0} AS [{1}]",
-                        Connection.GetTableFullName(_from.Database, _from.Table),
-                        _from.Member));
+                    sql.Append(string.Format("{0} AS {1}",
+                        DbUt.GetTableName(Connection, _from.Database, _from.Schema, _from.Table),
+                        DbUt.GetColumnName(Connection, _from.Member)));
                 }
                 else{
-                    sql.Append(string.Format(" ({0}) AS [{1}]",
+                    sql.Append(string.Format("({0}) AS {1}",
                         _fromExpression,
-                        _from.Member));
+                        DbUt.GetColumnName(Connection, _from.Member)));
                 }
             }
 
@@ -463,7 +469,7 @@ namespace DbLight.Sql
 
             //JOIN
             _joins.ForEach(join => {
-                string joinType = "";
+                var joinType = "";
                 switch (join.joinType){
                     case JoinType.InnerJoin:
                         joinType = "INNER JOIN";
@@ -475,12 +481,14 @@ namespace DbLight.Sql
 
                 string joinExpression;
                 if (join.expression == null){
-                    joinExpression = string.Format("{0} AS [{1}]",
-                        Connection.GetTableFullName(join.table.Database, join.table.Table),
-                        join.table.Member);
+                    joinExpression = string.Format("{0} AS {1}",
+                        DbUt.GetTableName(Connection, join.table.Database, _from.Schema, join.table.Table),
+                        DbUt.GetColumnName(Connection, join.table.Member));
                 }
                 else{
-                    joinExpression = string.Format("({0}) AS [{1}]", join.expression, join.table.Member);
+                    joinExpression = string.Format("({0}) AS {1}",
+                        join.expression,
+                        DbUt.GetColumnName(Connection, join.table.Member));
                 }
 
                 sql.Append(" ");
@@ -509,7 +517,9 @@ namespace DbLight.Sql
                 sql.Append(" GROUP BY");
                 var isFirstAdd = true;
                 foreach (var column in _groupBys){
-                    string subSql = string.Format("[{0}].[{1}]", column.Member, column.Column);
+                    string subSql = string.Format("{0}.{1}",
+                        DbUt.GetColumnName(Connection, column.Member),
+                        DbUt.GetColumnName(Connection, column.Column));
                     sql.Append(isFirstAdd ? " " : ", ");
                     sql.Append(subSql);
                     isFirstAdd = false;
@@ -535,7 +545,8 @@ namespace DbLight.Sql
                         displayName = item.Column.Member + "." + item.Column.Column;
                     }
 
-                    string subSql = string.Format("[{0}] {1}", displayName,
+                    string subSql = string.Format("{0} {1}",
+                        DbUt.GetColumnName(Connection, displayName),
                         item.OrderByType == SqlOrderByType.Asc ? "ASC" : "DESC");
                     sql.Append(isFirstAdd ? " " : ", ");
                     sql.Append(subSql);

@@ -8,69 +8,59 @@ namespace DbLight.Common
 {
     public class DbUt
     {
-        public static string ValueToWhereSql(DbConnection connection, object value){
+        internal static string GetTableName(DbConnection connection, string database, string schema, string table){
+            if (connection.DbType == DbDatabaseType.SqlServer){
+                var item = connection.Groups.Find(x =>
+                    x.virtualName.Equals(database, StringComparison.OrdinalIgnoreCase));
+                if (item.virtualName == null){
+                    return "[" + database + "]..[" + table + "]";
+                }
+
+                else{
+                    return "[" + item.realName + "]..[" + table + "]";
+                }
+            }
+
+            if (connection.DbType == DbDatabaseType.Postgres){
+                var item = connection.Groups.Find(x =>
+                    x.virtualName.Equals(schema, StringComparison.OrdinalIgnoreCase));
+                if (item.virtualName == null){
+                    return "\"" + (string.IsNullOrEmpty(schema) ? "public" : schema) + "\".\"" + table + "\"";
+                }
+                else{
+                    return "\"" + item.realName + "\".\"" + table + "\"";
+                }
+            }
+
+            throw new DbUnexpectedDbTypeException();
+        }
+
+        internal static string GetColumnName(DbConnection connection, string column){
+            if (connection.DbType == DbDatabaseType.SqlServer){
+                return "[" + column + "]";
+            }
+
+            if (connection.DbType == DbDatabaseType.Postgres){
+                return "\"" + column + "\"";
+            }
+
+            throw new DbUnexpectedDbTypeException();
+        }
+
+        internal static string ValueToWhereSql(DbConnection connection, object value){
             if (value == null){
                 throw new Exception("Value is NULL");
             }
 
-//            var valueType = value.GetType();
-//            if (valueType.IsPrimitive){
-//                return ValueToSql(connection, value, valueType);
-//            }
-//            else if (valueType == typeof(decimal)){
-//                return ValueToSql(connection, value, valueType);
-//            }
-//            else if (valueType == typeof(DateTime)){
-//                return ValueToSql(connection, value, valueType);
-//            }
-//            else if (valueType == typeof(string)){
-//                return ValueToSql(connection, value, valueType);
-//            }
-//            else{
-//                throw new Exception("Unknown data type for create edit sql.\n" +
-//                                    "Value = " + value + ", Type = " + valueType + "\n" +
-//                                    "Only supports the following data types in where part:\n" +
-//                                    "Primitive\n" +
-//                                    "decimal\n" +
-//                                    "DateTime\n" +
-//                                    "string");
-//            }
             return ValueToSql(connection, value);
         }
 
-        public static string ValueToSetSql(DbConnection connection, object value){
+        internal static string ValueToSetSql(DbConnection connection, object value){
             if (value == null){
                 return "NULL";
             }
-            
-            return ValueToSql(connection, value);
 
-//            var valueType = value.GetType();
-//            if (valueType.IsPrimitive){
-//                return ValueToSql(connection, value, valueType);
-//            }
-//            else if (valueType == typeof(decimal)){
-//                return ValueToSql(connection, value, valueType);
-//            }
-//            else if (valueType == typeof(DateTime)){
-//                return ValueToSql(connection, value, valueType);
-//            }
-//            else if (valueType == typeof(string)){
-//                return ValueToSql(connection, value, valueType);
-//            }
-//            else if (valueType == typeof(byte[])){
-//                return BytesToSetSql(connection, (byte[]) value);
-//            }
-//            else{
-//                throw new Exception("Unknown data type for create edit sql.\n" +
-//                                    "Value = " + value + ", Type = " + valueType + "\n" +
-//                                    "Only supports the following data types:\n" +
-//                                    "Primitive\n" +
-//                                    "decimal\n" +
-//                                    "DateTime\n" +
-//                                    "string\n" +
-//                                    "byte[]");
-//            }
+            return ValueToSql(connection, value);
         }
 
         private static string ValueToSql(DbConnection connection, object value){
@@ -78,23 +68,37 @@ namespace DbLight.Common
                 if (connection.DbType == DbDatabaseType.SqlServer){
                     return 'N' + "'" + vs.Replace("'", "''") + "'";
                 }
-                else{
-                    throw new DbUnexpectedDbTypeException();
+
+                if (connection.DbType == DbDatabaseType.Postgres){
+                    return "'" + vs.Replace("'", "''") + "'";
                 }
+
+                throw new DbUnexpectedDbTypeException();
             }
             else if (value is int){
                 return value.ToString();
             }
             else if (value is bool bv){
-                return bv ? "1" : "0";
+                if (connection.DbType == DbDatabaseType.SqlServer){
+                    return bv ? "1" : "0";
+                }
+
+                if (connection.DbType == DbDatabaseType.Postgres){
+                    return bv ? "true" : "false";
+                }
+
+                throw new DbUnexpectedDbTypeException();
             }
             else if (value is DateTime dv){
                 if (connection.DbType == DbDatabaseType.SqlServer){
                     return $"'{dv.ToString("yyyy-MM-dd HH:mm:ss")}'";
                 }
-                else{
-                    throw new DbUnexpectedDbTypeException();
+
+                if (connection.DbType == DbDatabaseType.Postgres){
+                    return $"'{dv.ToString("yyyy-MM-dd HH:mm:ss")}'";
                 }
+
+                throw new DbUnexpectedDbTypeException();
             }
             else if (value is decimal ||
                      value is double ||
@@ -103,60 +107,58 @@ namespace DbLight.Common
                      value is Int16){
                 return value.ToString();
             }
+            else if (value is byte[] bytes){
+                if (connection.DbType == DbDatabaseType.SqlServer){
+                    return "0x" + BitConverter.ToString(bytes).Replace("-", "");
+                }
+
+                if (connection.DbType == DbDatabaseType.Postgres){
+                    return "decode('" + BitConverter.ToString(bytes).Replace("-", "") + "', 'hex')";
+                }
+
+                throw new DbUnexpectedDbTypeException();
+            }
             else{
                 throw new DbUnexpectedDbTypeException();
             }
         }
 
-//        private static string ValueToSql(DbConnection connection, object value, Type valueType){
-//            if (valueType.IsPrimitive){
-//                //basic type
-//                if (valueType == typeof(bool)){
-//                    return ((bool) value) ? "1" : "0";
-//                }
-//                else{
-//                    return value.ToString();
-//                }
-//            }
-//            else if (valueType == typeof(decimal)){
-//                return value.ToString();
-//            }
-//            else if (valueType == typeof(DateTime)){
-//                if (connection.DbType == DbDatabaseType.SqlServer){
-//                    return ((DateTime) value).ToString("'yyyy-MM-dd HH:mm:ss'");
-//                }
-//                else{
-//                    throw new DbUnexpectedDbTypeException();
-//                }
-//            }
-//            else if (valueType == typeof(string)){
-//                var s = (string) value;
-//                if (connection.DbType == DbDatabaseType.SqlServer){
-//                    return 'N' + "'" + s.Replace("'", "''") + "'";
-//                }
-//                else{
-//                    throw new DbUnexpectedDbTypeException();
-//                }
-//            }
-//            else{
-//                throw new DbCrashException("Failed to get here.");
-//            }
-//        }
-
-        public static string BytesToSetSql(DbConnection connection, byte[] v){
+        internal static string ValueToLikeSql(DbConnection connection, DbWhereLikeType likeType, string value){
             if (connection.DbType == DbDatabaseType.SqlServer){
-                if (v != null && v.Length > 0){
-                    return "0x" + BitConverter.ToString(v).Replace("-", "");
-                }
-                else{
-                    return "NULL";
+                switch (likeType){
+                    case DbWhereLikeType.Before:
+                        return $"N'{value.Replace("'", "''")}%'";
+                    case DbWhereLikeType.After:
+                        return $"N'%{value.Replace("'", "''")}'";
+                    case DbWhereLikeType.Middle:
+                        return $"N'%{value.Replace("'", "''")}%'";
+                    default:
+                        throw new DbUnknownException("Unexpected Like Type.\n" +
+                                                     "Like Type: " + likeType);
                 }
             }
-            else{
-                throw new DbUnexpectedDbTypeException();
+
+            if (connection.DbType == DbDatabaseType.Postgres){
+                switch (likeType){
+                    case DbWhereLikeType.Before:
+                        return $"'{value.Replace("'", "''")}%'";
+                    case DbWhereLikeType.After:
+                        return $"'%{value.Replace("'", "''")}'";
+                    case DbWhereLikeType.Middle:
+                        return $"'%{value.Replace("'", "''")}%'";
+                    default:
+                        throw new DbUnknownException("Unexpected Like Type.\n" +
+                                                     "Like Type: " + likeType);
+                }
             }
+
+            throw new DbUnexpectedDbTypeException();
         }
-        
+
+        internal static string ToLikeSql(DbConnection connection, string express, DbWhereLikeType likeType, string value){
+            var likeValue = ValueToLikeSql(connection, likeType, value);
+            return $"{express} LIKE {likeValue}";
+        }
 
         public static string IdentifyInsertOnSql(DbConnection connection, string table){
             if (connection.DbType == DbDatabaseType.SqlServer){

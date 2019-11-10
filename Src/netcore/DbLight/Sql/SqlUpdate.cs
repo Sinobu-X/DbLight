@@ -30,10 +30,12 @@ namespace DbLight.Sql
 
             if (ModelInfo.Kind == DbModelKind.Tuple){
                 _from.Table = ModelInfo.Members[0].Model.TableName;
+                _from.Schema = ModelInfo.Members[0].Model.SchemaName;
                 _from.Database = ModelInfo.Members[0].Model.DatabaseName;
             }
             else{
                 _from.Table = ModelInfo.TableName;
+                _from.Schema = ModelInfo.SchemaName;
                 _from.Database = ModelInfo.DatabaseName;
             }
         }
@@ -152,19 +154,19 @@ namespace DbLight.Sql
             sql.Append("UPDATE ");
 
             //TABLE
-            sql.Append(Connection.GetTableFullName(_from.Database, _from.Table));
+            sql.Append(DbUt.GetTableName(Connection, _from.Database, _from.Schema, _from.Table));
 
             //SET
             sql.Append(" SET ");
 
             {
-                bool isFirst = true;
+                var isFirst = true;
                 foreach (var column in members){
                     sql.Append(isFirst ? "" : ", ");
                     isFirst = false;
                     var value = column.PropertyInfo.GetValue(_item);
-                    sql.Append(string.Format("[{0}] = {1}",
-                        column.ColumnName,
+                    sql.Append(string.Format("{0} = {1}",
+                        DbUt.GetColumnName(Connection, column.ColumnName),
                         DbUt.ValueToSetSql(Connection, value)));
                 }
 

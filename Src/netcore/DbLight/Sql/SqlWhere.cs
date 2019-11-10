@@ -56,8 +56,9 @@ namespace DbLight.Sql
                 sql.Append(isFirst ? "" : JoinType == SqlWhereJoinType.And ? " AND " : " OR ");
                 isFirst = false;
 
-                bool needBracket = false;
-                if (JoinType == SqlWhereJoinType.And && x.ToUpper().IndexOf(" OR ", StringComparison.Ordinal) >= 0){
+                var needBracket = false;
+                if (JoinType == SqlWhereJoinType.And &&
+                    x.ToUpper().IndexOf(" OR ", StringComparison.Ordinal) >= 0){
                     needBracket = true;
                 }
                 else if (JoinType == SqlWhereJoinType.Or &&
@@ -105,29 +106,25 @@ namespace DbLight.Sql
         public SqlWhere(TP parent, SqlWhereJoinType joinType = SqlWhereJoinType.And){
             _parent = parent;
             JoinType = joinType;
-            if (_parent is SqlQuery){
-                var q = _parent as SqlQuery;
-                Connection = q.Connection;
-                ModelInfo = q.ModelInfo;
+            if (_parent is SqlQuery sq){
+                Connection = sq.Connection;
+                ModelInfo = sq.ModelInfo;
                 WhereType = SqlWhereType.Query;
             }
-            else if (_parent is SqlDelete){
-                var d = _parent as SqlDelete;
-                Connection = d.Connection;
-                ModelInfo = d.ModelInfo;
+            else if (_parent is SqlDelete sd){
+                Connection = sd.Connection;
+                ModelInfo = sd.ModelInfo;
                 WhereType = SqlWhereType.Delete;
             }
-            else if (_parent is SqlUpdate){
-                var d = _parent as SqlUpdate;
-                Connection = d.Connection;
-                ModelInfo = d.ModelInfo;
+            else if (_parent is SqlUpdate su){
+                Connection = su.Connection;
+                ModelInfo = su.ModelInfo;
                 WhereType = SqlWhereType.Update;
             }
-            else if (_parent is SqlWhere){
-                var d = _parent as SqlWhere;
-                Connection = d.Connection;
-                ModelInfo = d.ModelInfo;
-                WhereType = d.WhereType;
+            else if (_parent is SqlWhere sw){
+                Connection = sw.Connection;
+                ModelInfo = sw.ModelInfo;
+                WhereType = sw.WhereType;
             }
             else{
                 throw new Exception("P only be SqlQuery, SqlDelete, SqlUpdate, SqlWhere.");
@@ -213,6 +210,7 @@ namespace DbLight.Sql
                 AddWhere(DbExpressionHelper.ReadEditWhereInExpression(Connection, ModelInfo,
                     expression, values));
             }
+
             return this;
         }
 

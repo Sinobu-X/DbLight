@@ -44,10 +44,12 @@ namespace DbLight.Sql
 
             if (ModelInfo.Kind == DbModelKind.Tuple){
                 _from.Table = ModelInfo.Members[0].Model.TableName;
+                _from.Schema = ModelInfo.Members[0].Model.SchemaName;
                 _from.Database = ModelInfo.Members[0].Model.DatabaseName;
             }
             else{
                 _from.Table = ModelInfo.TableName;
+                _from.Schema = ModelInfo.SchemaName;
                 _from.Database = ModelInfo.DatabaseName;
             }
         }
@@ -69,7 +71,7 @@ namespace DbLight.Sql
         public Task<int> ExecuteAsync(){
             return _context.ExecNoQueryAsync(ToString());
         }
-        
+
         public int Execute(){
             return _context.ExecNoQuery(ToString());
         }
@@ -85,7 +87,7 @@ namespace DbLight.Sql
             sql.Append("DELETE FROM ");
 
             //FROM
-            sql.Append(Connection.GetTableFullName(_from.Database, _from.Table));
+            sql.Append(DbUt.GetTableName(Connection, _from.Database, _from.Schema, _from.Table));
 
             //WHERE
             if (_where != null){

@@ -7,7 +7,7 @@ namespace DbLight.Common
 {
     public class DbModelHelper
     {
-        private static ConcurrentDictionary<Type, DbModelInfo> _modelCaches = new ConcurrentDictionary<Type, DbModelInfo>();
+        private static readonly ConcurrentDictionary<Type, DbModelInfo> _modelCaches = new ConcurrentDictionary<Type, DbModelInfo>();
         
         public static bool IsTuple(Type tuple){
             if (!tuple.IsGenericType){
@@ -59,12 +59,16 @@ namespace DbLight.Common
 
             if (m.Kind == DbModelKind.Object){
                 m.TableName = m.Type.Name;
+                m.SchemaName = "";
                 m.DatabaseName = "";
 
                 var tableAttribute = m.Type.GetCustomAttribute<TableAttribute>();
                 if (tableAttribute != null){
                     if (!string.IsNullOrEmpty(tableAttribute.Name)){
                         m.TableName = tableAttribute.Name;
+                    }
+                    if (!string.IsNullOrEmpty(tableAttribute.Schema)){
+                        m.SchemaName = tableAttribute.Schema;
                     }
                     if (!string.IsNullOrEmpty(tableAttribute.Database)){
                         m.DatabaseName = tableAttribute.Database;

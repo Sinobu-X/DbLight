@@ -360,6 +360,7 @@ namespace DbLight.Common
                     return new DbTableModelInfo(){
                         Member = memberInfo.ColumnName,
                         Table = memberInfo.Model.TableName,
+                        Schema = memberInfo.Model.SchemaName,
                         Database = memberInfo.Model.DatabaseName
                     };
                 }
@@ -422,6 +423,7 @@ namespace DbLight.Common
                 return new DbTableModelInfo(){
                     Member = "a",
                     Table = modelInfo.TableName,
+                    Schema = modelInfo.SchemaName,
                     Database = modelInfo.DatabaseName
                 };
             }
@@ -444,6 +446,7 @@ namespace DbLight.Common
                     return new DbTableModelInfo(){
                         Member = memberInfo.ColumnName,
                         Table = memberInfo.Model.TableName,
+                        Schema = memberInfo.Model.SchemaName,
                         Database = memberInfo.Model.DatabaseName
                     };
                 }
@@ -685,28 +688,7 @@ namespace DbLight.Common
 
         public string ToLikeSql(DbWhereLikeType likeType, string value){
             var column = ColumnToSql(_expression);
-            string likeValue;
-            if (_connection.DbType == DbDatabaseType.SqlServer){
-                switch (likeType){
-                    case DbWhereLikeType.Before:
-                        likeValue = $"N'{value.Replace("'", "''")}%'";
-                        break;
-                    case DbWhereLikeType.After:
-                        likeValue = $"N'%{value.Replace("'", "''")}'";
-                        break;
-                    case DbWhereLikeType.Middle:
-                        likeValue = $"N'%{value.Replace("'", "''")}%'";
-                        break;
-                    default:
-                        throw new DbUnknownException("Unexpected Like Type.\n" +
-                                                     "Like Type: " + likeType);
-                }
-            }
-            else{
-                throw new DbUnexpectedDbTypeException();
-            }
-
-            return $"{column} LIKE {likeValue}";
+            return DbUt.ToLikeSql(_connection, column, likeType, value);
         }
 
         public string ToInSql<T2>(IEnumerable<T2> values){
@@ -882,10 +864,12 @@ namespace DbLight.Common
             }
 
             if (_whereType == DbWhereType.Query){
-                return string.Format("[{0}].[{1}]", columns[0].Member, columns[0].Column);
+                return string.Format("{0}.{1}",
+                    DbUt.GetColumnName(_connection, columns[0].Member),
+                    DbUt.GetColumnName(_connection, columns[0].Column));
             }
             else{
-                return string.Format("[{0}]", columns[0].Column);
+                return string.Format("{0}", DbUt.GetColumnName(_connection, columns[0].Column));
             }
         }
 
@@ -1081,7 +1065,7 @@ namespace DbLight.Common
                     var value = Expression.Lambda(expression.Arguments[0]).Compile().DynamicInvoke();
                     if (value is string str){
                         var column = ColumnToSql(expression.Object);
-                        return string.Format("{0} LIKE N'%{1}%'", column, str.Replace("'", "''"));
+                        return DbUt.ToLikeSql(_connection, column, DbWhereLikeType.Middle, str);
                     }
                     else{
                         throw GetCallException(expression);
@@ -1131,7 +1115,7 @@ namespace DbLight.Common
                     var value = Expression.Lambda(expression.Arguments[0]).Compile().DynamicInvoke();
                     if (value is string str){
                         var column = ColumnToSql(expression.Object);
-                        return string.Format("{0} LIKE N'{1}%'", column, str.Replace("'", "''"));
+                        return DbUt.ToLikeSql(_connection, column, DbWhereLikeType.Before, str);
                     }
                     else{
                         throw GetCallException(expression);
@@ -1149,7 +1133,7 @@ namespace DbLight.Common
                     var value = Expression.Lambda(expression.Arguments[0]).Compile().DynamicInvoke();
                     if (value is string str){
                         var column = ColumnToSql(expression.Object);
-                        return string.Format("{0} LIKE N'%{1}'", column, str.Replace("'", "''"));
+                        return DbUt.ToLikeSql(_connection, column, DbWhereLikeType.After, str);
                     }
                     else{
                         throw GetCallException(expression);
@@ -1208,12 +1192,15 @@ namespace DbLight.Common
             var copyParameters = new object[parameters.Count];
             if (_whereType == DbWhereType.Query){
                 for (var i = 0; i < parameters.Count; i++){
-                    copyParameters[i] = string.Format("[{0}].[{1}]", parameters[i].Member, parameters[i].Column);
+                    copyParameters[i] = string.Format("{0}.{1}",
+                        DbUt.GetColumnName(_connection, parameters[i].Member),
+                        DbUt.GetColumnName(_connection, parameters[i].Column));
                 }
             }
             else{
                 for (var i = 0; i < parameters.Count; i++){
-                    copyParameters[i] = string.Format("[{0}]", parameters[i].Column);
+                    copyParameters[i] = string.Format("{0}",
+                        DbUt.GetColumnName(_connection, parameters[i].Column));
                 }
             }
 

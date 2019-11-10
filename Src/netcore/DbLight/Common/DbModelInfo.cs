@@ -57,6 +57,7 @@ namespace DbLight.Common
 
         //Object only
         public string DatabaseName;
+        public string SchemaName;
         public string TableName;
     }
 
@@ -92,6 +93,7 @@ namespace DbLight.Common
     {
         public string Member{ get; set; } = "";
         public string Table{ get; set; } = "";
+        public string Schema{ get; set; } = "";
         public string Database{ get; set; } = "";
     }
 

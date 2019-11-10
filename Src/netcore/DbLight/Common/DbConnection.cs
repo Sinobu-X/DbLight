@@ -11,8 +11,12 @@ namespace DbLight.Common
         public string TestConnectionString{ get; set; }
         public bool TestConnection{ get; set; } = true;
         public SqlServerInfo SqlServer{ get; set; }
+
         public AccessInfo Access{ get; set; }
+
         public OracleInfo Oracle{ get; set; }
+
+        public PostgresInfo Postgres{ get; set; }
         public List<(string virtualName, string realName)> Groups{ get; set; } = new List<(string, string)>();
         public DbLogError LogError{ get; set; }
         public DBLogWarn LogWarn{ get; set; }
@@ -51,20 +55,12 @@ namespace DbLight.Common
         {
         }
 
-        public string GetTableFullName(string database, string table){
-            if (DbType == DbDatabaseType.SqlServer){
-                var item = Groups.Find(x => x.virtualName.Equals(database, StringComparison.OrdinalIgnoreCase));
-                if (item.virtualName == null){
-                    return "[" + database + "]..[" + table + "]";
-                }
-
-                else{
-                    return "[" + item.realName + "]..[" + table + "]";
-                }
-            }
-            else{
-                throw new DbUnexpectedDbTypeException();
-            }
+        public class PostgresInfo
+        {
+            public string Host{ get; set; } = "";
+            public string User{ get; set; } = "";
+            public string Password{ get; set; } = "";
+            public string Database{ get; set; } = "";
         }
 
         public void Info(string message){

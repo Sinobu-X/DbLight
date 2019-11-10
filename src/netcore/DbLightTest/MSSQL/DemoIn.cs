@@ -8,6 +8,7 @@ namespace DbLightTest
 {
     public class DemoIn
     {
+
         public static void InArray(DbConnection cn){
             var db = new DbContext(cn);
 
