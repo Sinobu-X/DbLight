@@ -87,7 +87,7 @@ namespace DbLight.Sql
             sql.Append("DELETE FROM ");
 
             //FROM
-            sql.Append(DbUt.GetTableName(Connection, _from.Database, _from.Schema, _from.Table));
+            sql.Append(DbSql.GetTableName(Connection, _from.Database, _from.Schema, _from.Table));
 
             //WHERE
             if (_where != null){

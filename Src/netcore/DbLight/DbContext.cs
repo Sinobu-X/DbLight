@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using DbLight.Sql;
 using DbLight.Common;
+using DbLight.Exceptions;
 
 namespace DbLight
 {
@@ -20,6 +21,8 @@ namespace DbLight
             else if (connection.DbType == DbDatabaseType.Postgres){
                 _inner = new Provider.Postgres.DbContextInner(connection);
             }
+
+            throw new DbUnexpectedDbTypeException();
         }
 
         public void Dispose(){

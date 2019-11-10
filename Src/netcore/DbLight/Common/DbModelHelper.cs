@@ -7,7 +7,8 @@ namespace DbLight.Common
 {
     public class DbModelHelper
     {
-        private static readonly ConcurrentDictionary<Type, DbModelInfo> _modelCaches = new ConcurrentDictionary<Type, DbModelInfo>();
+        private static readonly ConcurrentDictionary<Type, DbModelInfo> ModelCaches =
+            new ConcurrentDictionary<Type, DbModelInfo>();
         
         public static bool IsTuple(Type tuple){
             if (!tuple.IsGenericType){
@@ -26,11 +27,11 @@ namespace DbLight.Common
         }
         
         public static DbModelInfo GetModelInfo(Type type){
-            if (_modelCaches.TryGetValue(type, out var modelInfo)){
+            if (ModelCaches.TryGetValue(type, out var modelInfo)){
                 return modelInfo;
             }
             modelInfo = GetModelInfo(type, 0);
-            _modelCaches[type] = modelInfo;
+            ModelCaches[type] = modelInfo;
             return modelInfo;
         }
 

@@ -154,7 +154,7 @@ namespace DbLight.Sql
             sql.Append("UPDATE ");
 
             //TABLE
-            sql.Append(DbUt.GetTableName(Connection, _from.Database, _from.Schema, _from.Table));
+            sql.Append(DbSql.GetTableName(Connection, _from.Database, _from.Schema, _from.Table));
 
             //SET
             sql.Append(" SET ");
@@ -166,8 +166,8 @@ namespace DbLight.Sql
                     isFirst = false;
                     var value = column.PropertyInfo.GetValue(_item);
                     sql.Append(string.Format("{0} = {1}",
-                        DbUt.GetColumnName(Connection, column.ColumnName),
-                        DbUt.ValueToSetSql(Connection, value)));
+                        DbSql.GetColumnName(Connection, column.ColumnName),
+                        DbSql.ValueToSetSql(Connection, value)));
                 }
 
                 foreach (var expression in _expressions){

@@ -110,7 +110,7 @@ namespace DbLight.Sql
             sql.Append("INSERT INTO ");
 
             //TABLE
-            sql.Append(DbUt.GetTableName(Connection, _from.Database, _from.Schema, _from.Table));
+            sql.Append(DbSql.GetTableName(Connection, _from.Database, _from.Schema, _from.Table));
 
             //COLUMNS BEGIN
             sql.Append("(");
@@ -121,7 +121,7 @@ namespace DbLight.Sql
                 foreach (var column in members){
                     sql.Append(isFirst ? "" : ", ");
                     isFirst = false;
-                    sql.Append(DbUt.GetColumnName(Connection, column.ColumnName));
+                    sql.Append(DbSql.GetColumnName(Connection, column.ColumnName));
                 }
             }
             sql.Append("");
@@ -136,7 +136,7 @@ namespace DbLight.Sql
                     sql.Append(isFirst ? "" : ", ");
                     isFirst = false;
                     var value = column.PropertyInfo.GetValue(_item);
-                    sql.Append(DbUt.ValueToSetSql(Connection, value));
+                    sql.Append(DbSql.ValueToSetSql(Connection, value));
                 }
             }
 

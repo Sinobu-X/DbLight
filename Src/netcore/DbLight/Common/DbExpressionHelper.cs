@@ -683,12 +683,12 @@ namespace DbLight.Common
                                                  "Expression Type: " + expressionType);
             }
 
-            return $"{column}{connect}{DbUt.ValueToWhereSql(_connection, value)}";
+            return $"{column}{connect}{DbSql.ValueToWhereSql(_connection, value)}";
         }
 
         public string ToLikeSql(DbWhereLikeType likeType, string value){
             var column = ColumnToSql(_expression);
-            return DbUt.ToLikeSql(_connection, column, likeType, value);
+            return DbSql.ToLikeSql(_connection, column, likeType, value);
         }
 
         public string ToInSql<T2>(IEnumerable<T2> values){
@@ -696,7 +696,7 @@ namespace DbLight.Common
             var strValues = new List<string>();
 
             foreach (var value in values){
-                strValues.Add(DbUt.ValueToWhereSql(_connection, value));
+                strValues.Add(DbSql.ValueToWhereSql(_connection, value));
             }
 
             return $"{column} IN ({string.Join(", ", strValues)})";
@@ -834,7 +834,7 @@ namespace DbLight.Common
                 else{
                     var value = Expression.Lambda(expression).Compile().DynamicInvoke();
                     try{
-                        return DbUt.ValueToWhereSql(_connection, value);
+                        return DbSql.ValueToWhereSql(_connection, value);
                     }
                     catch (Exception ex){
                         throw new Exception("Failed to read value from the expression.\n" +
@@ -865,11 +865,11 @@ namespace DbLight.Common
 
             if (_whereType == DbWhereType.Query){
                 return string.Format("{0}.{1}",
-                    DbUt.GetColumnName(_connection, columns[0].Member),
-                    DbUt.GetColumnName(_connection, columns[0].Column));
+                    DbSql.GetColumnName(_connection, columns[0].Member),
+                    DbSql.GetColumnName(_connection, columns[0].Column));
             }
             else{
-                return string.Format("{0}", DbUt.GetColumnName(_connection, columns[0].Column));
+                return string.Format("{0}", DbSql.GetColumnName(_connection, columns[0].Column));
             }
         }
 
@@ -944,7 +944,7 @@ namespace DbLight.Common
             var objValue = Expression.Lambda(left.Arguments[0]).Compile().DynamicInvoke();
             string strValue;
             try{
-                strValue = DbUt.ValueToWhereSql(_connection, objValue);
+                strValue = DbSql.ValueToWhereSql(_connection, objValue);
             }
             catch (Exception ex){
                 throw new Exception("Failed to read value from the expression.\n" +
@@ -1065,7 +1065,7 @@ namespace DbLight.Common
                     var value = Expression.Lambda(expression.Arguments[0]).Compile().DynamicInvoke();
                     if (value is string str){
                         var column = ColumnToSql(expression.Object);
-                        return DbUt.ToLikeSql(_connection, column, DbWhereLikeType.Middle, str);
+                        return DbSql.ToLikeSql(_connection, column, DbWhereLikeType.Middle, str);
                     }
                     else{
                         throw GetCallException(expression);
@@ -1090,7 +1090,7 @@ namespace DbLight.Common
                     foreach (var value in values){
                         string valueSql;
                         try{
-                            valueSql = DbUt.ValueToWhereSql(_connection, value);
+                            valueSql = DbSql.ValueToWhereSql(_connection, value);
                         }
                         catch (Exception ex){
                             throw new Exception("Failed to read value from the expression.\n" +
@@ -1115,7 +1115,7 @@ namespace DbLight.Common
                     var value = Expression.Lambda(expression.Arguments[0]).Compile().DynamicInvoke();
                     if (value is string str){
                         var column = ColumnToSql(expression.Object);
-                        return DbUt.ToLikeSql(_connection, column, DbWhereLikeType.Before, str);
+                        return DbSql.ToLikeSql(_connection, column, DbWhereLikeType.Before, str);
                     }
                     else{
                         throw GetCallException(expression);
@@ -1133,7 +1133,7 @@ namespace DbLight.Common
                     var value = Expression.Lambda(expression.Arguments[0]).Compile().DynamicInvoke();
                     if (value is string str){
                         var column = ColumnToSql(expression.Object);
-                        return DbUt.ToLikeSql(_connection, column, DbWhereLikeType.After, str);
+                        return DbSql.ToLikeSql(_connection, column, DbWhereLikeType.After, str);
                     }
                     else{
                         throw GetCallException(expression);
@@ -1193,14 +1193,14 @@ namespace DbLight.Common
             if (_whereType == DbWhereType.Query){
                 for (var i = 0; i < parameters.Count; i++){
                     copyParameters[i] = string.Format("{0}.{1}",
-                        DbUt.GetColumnName(_connection, parameters[i].Member),
-                        DbUt.GetColumnName(_connection, parameters[i].Column));
+                        DbSql.GetColumnName(_connection, parameters[i].Member),
+                        DbSql.GetColumnName(_connection, parameters[i].Column));
                 }
             }
             else{
                 for (var i = 0; i < parameters.Count; i++){
                     copyParameters[i] = string.Format("{0}",
-                        DbUt.GetColumnName(_connection, parameters[i].Column));
+                        DbSql.GetColumnName(_connection, parameters[i].Column));
                 }
             }
 
@@ -1222,7 +1222,7 @@ namespace DbLight.Common
         Edit
     }
 
-    internal enum DbWhereLikeType
+    public enum DbWhereLikeType
     {
         Before,
         After,
