@@ -185,6 +185,9 @@ namespace DbLight.Sql
                 case SqlLikeType.Middle:
                     expressionType = DbWhereLikeType.Middle;
                     break;
+                case SqlLikeType.Equal:
+                    expressionType = DbWhereLikeType.Equal;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(likeType), likeType, null);
             }
@@ -278,5 +281,6 @@ namespace DbLight.Sql
         Before,
         After,
         Middle,
+        Equal,
     }
 }

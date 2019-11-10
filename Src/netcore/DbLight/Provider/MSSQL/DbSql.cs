@@ -74,6 +74,8 @@ namespace DbLight.Provider.MSSQL
                     return $"N'%{value.Replace("'", "''")}'";
                 case DbWhereLikeType.Middle:
                     return $"N'%{value.Replace("'", "''")}%'";
+                case DbWhereLikeType.Equal:
+                    return $"N'{value.Replace("'", "''")}'";
                 default:
                     throw new DbUnknownException("Unexpected Like Type.\n" +
                                                  "Like Type: " + likeType);

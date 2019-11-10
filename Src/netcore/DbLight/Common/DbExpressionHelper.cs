@@ -1226,6 +1226,7 @@ namespace DbLight.Common
     {
         Before,
         After,
-        Middle
+        Middle,
+        Equal,
     }
 }

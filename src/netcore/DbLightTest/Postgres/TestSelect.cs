@@ -13,13 +13,26 @@ namespace DbLightTest.Postgres
     public class TestSelect : TestBase
     {
         [Test]
-        public void WhereId(){
+        public void Top(){
             var db = new DbContext(GetConnection());
             var query = db.Query<User>()
-                .SelectWithIgnore(x => x, x => x.Photo);
+                .Top(3)
+                .OrderBy(x => x.UserId);
 
             Console.WriteLine(query.ToString());
             Console.WriteLine(JsonConvert.SerializeObject(query.ToList()));
+        }
+
+        [Test]
+        public void Distinct(){
+            var db = new DbContext(GetConnection());
+            var query = db.Query<User>()
+                .Distinct()
+                .Select(x => x.SexId)
+                .OrderBy(x => x.SexId);
+
+            Console.WriteLine(query.ToString());
+            Console.WriteLine(JsonConvert.SerializeObject(query.ToList(x => x.SexId)));
         }
 
         [Test]
@@ -47,10 +60,11 @@ namespace DbLightTest.Postgres
         }
 
         [Test]
-        public void ChildQueryColumn(){
+        public void ChildQueryAtColumn(){
             //SELECT "Item1"."user_id" AS "Item1.user_id", "Item1"."income" AS "Item1.income",
             //(SELECT (MAX("a"."role_id")) AS "role_id" FROM "public"."role" AS "a") AS "Item2.Item2"
             //FROM "public"."user" AS "Item1"
+
             var db = new DbContext(GetConnection());
             var query = db.Query<(User User, int MaxRoleId)>()
                 .Select(x => new{
@@ -60,11 +74,151 @@ namespace DbLightTest.Postgres
                 .Select(x => x.MaxRoleId, db.ChildQuery<Role>().Max(x => x.RoleId));
 
             Console.WriteLine(query.ToString());
-            Console.WriteLine(
-                JsonConvert.SerializeObject(query.ToList(x => (x.User.UserId,
-                    x.User.Income, x.MaxRoleId))));
+            Console.WriteLine(JsonConvert.SerializeObject(query.ToList(x => new{
+                UserId = x.User.UserId,
+                Income = x.User.Income,
+                MaxRoleId = x.MaxRoleId
+            })));
+        }
+
+        [Test]
+        public void MaxAndCount(){
+            var db = new DbContext(GetConnection());
+            var query = db.Query<(User User, long Count)>()
+                .Select(x => x.User.SexId)
+                .Max(x => x.User.UserId)
+                .Count(x => x.Count)
+                .GroupBy(x => x.User.SexId)
+                .OrderBy(x => x.User.SexId);
+
+            Console.WriteLine(query.ToString());
+            Console.WriteLine(JsonConvert.SerializeObject(query.ToList(x => new{
+                SexId = x.User.SexId,
+                UserId = x.User.UserId,
+                Count = x.Count
+            })));
         }
 
 
+        [Test]
+        public void LeftJoin(){
+            var db = new DbContext(GetConnection());
+            var query = db.Query<(User User, Sex Sex)>()
+                .Select(x => new{
+                    x.User,
+                    x.Sex
+                })
+                .LeftJoin(x => x.Sex, x => x.Sex.SexId == x.User.SexId)
+                .Where(x => x.User.UserId > 0 && x.Sex.SexId != 2);
+
+            Console.WriteLine(query.ToString());
+            Console.WriteLine(
+                JsonConvert.SerializeObject(query.ToList()));
+        }
+
+        [Test]
+        public void InnerJoin(){
+            var db = new DbContext(GetConnection());
+            var query = db.Query<(User User, Sex Sex)>()
+                .Select(x => new{
+                    x.User,
+                    x.Sex
+                })
+                .InnerJoin(x => x.Sex, x => x.Sex.SexId == x.User.SexId)
+                .Where(x => x.User.UserId > 0 && x.Sex.SexId != 2);
+
+            Console.WriteLine(query.ToString());
+            Console.WriteLine(
+                JsonConvert.SerializeObject(query.ToList()));
+        }
+
+
+        [Test]
+        public void WhereLike(){
+            var db = new DbContext(GetConnection());
+            var query = db.Query<User>()
+                .WhereBegin()
+                .Like(x => x.UserName, SqlLikeType.Equal, "name 12")
+                .WhereEnded();
+
+            Console.WriteLine(query.ToString());
+            Console.WriteLine(
+                JsonConvert.SerializeObject(query.ToList()));
+        }
+
+
+        [Test]
+        public void WhereInArray(){
+            var db = new DbContext(GetConnection());
+
+            //SELECT * FROM "public"."user" AS "a"
+            //WHERE "a"."user_id" IN (1, 2, 3)
+            //OR "a"."user_name" IN ('a', 'b', 'c')
+
+            var userIds = new[]{1, 2, 3};
+            var userNames = new[]{"a", "b", "c"};
+
+            {
+                var query = db.Query<User>()
+                    .Where(x => userIds.Contains(x.UserId) || userNames.Contains(x.UserName));
+
+                Console.WriteLine(query.ToString());
+                Console.WriteLine(
+                    JsonConvert.SerializeObject(query.ToList()));
+            }
+
+            {
+                var query = db.Query<User>()
+                    .WhereBegin(SqlWhereJoinType.Or)
+                    .In(x => x.UserId, userIds)
+                    .In(x => x.UserName, userNames)
+                    .WhereEnded();
+
+                Console.WriteLine(query.ToString());
+                Console.WriteLine(
+                    JsonConvert.SerializeObject(query.ToList()));
+            }
+        }
+
+        [Test]
+        public void WhereInQuery(){
+            var db = new DbContext(GetConnection());
+
+            //SELECT * FROM "public"."user" AS "a"
+            //WHERE "a"."user_id" > 3
+            //AND "a"."user_id" IN(
+            //    SELECT "a"."user_id" AS "user_id"
+            //    FROM "public"."role_user" AS "a"
+            //    WHERE "a"."role_id" = 4)
+
+            {
+                var query = db.Query<User>()
+                    .Where(x => x.UserId > 3 &&
+                                db.ChildQuery<RoleUser>()
+                                    .Select(y => y.UserId)
+                                    .Where(y => y.RoleId == 4).Contains(x.UserId));
+
+                Console.WriteLine(query.ToString());
+                Console.WriteLine(
+                    JsonConvert.SerializeObject(query.ToList()));
+            }
+
+            {
+                var query = db.Query<User>()
+                    .WhereBegin()
+                    .Compare(x => x.UserId, SqlCompareType.Greater, 3)
+                    .Add(x => db.ChildQuery<RoleUser>()
+                        .Select(y => y.UserId)
+                        .WhereBegin(SqlWhereJoinType.And)
+                        .Compare(y => y.RoleId, SqlCompareType.Equal, 4)
+                        .WhereEnded()
+                        .Contains(x.UserId))
+                    .WhereEnded();
+
+                Console.WriteLine(query.ToString());
+                Console.WriteLine(
+                    JsonConvert.SerializeObject(query.ToList()));
+            }
+        }
     }
 }

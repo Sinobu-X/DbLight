@@ -73,6 +73,8 @@ namespace DbLight.Provider.Postgres
                     return $"'%{value.Replace("'", "''")}'";
                 case DbWhereLikeType.Middle:
                     return $"'%{value.Replace("'", "''")}%'";
+                case DbWhereLikeType.Equal:
+                    return $"'{value.Replace("'", "''")}'";
                 default:
                     throw new DbUnknownException("Unexpected Like Type.\n" + "Like Type: " + likeType);
             }
