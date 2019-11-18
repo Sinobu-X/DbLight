@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Reflection;
 using DbLight.Common;
 
 namespace DbLight.Mapping
@@ -8,7 +9,7 @@ namespace DbLight.Mapping
     public class DataTableMapping<T1, T2> where T1 : new()
     {
         private readonly DbModelInfo _model;
-        private readonly List<(string TableName, string ColumnName)> _columns;
+        private readonly List<(string TableName, string ColumnName, Type dataType)> _columns;
         private readonly Func<T1, T2> _converter;
         private readonly List<T2> _results;
 
@@ -22,7 +23,7 @@ namespace DbLight.Mapping
                 throw new Exception("The receiver data type muse be an object or tuple.");
             }
 
-            _columns = new List<(string TableName, string ColumnName)>();
+            _columns = new List<(string TableName, string ColumnName, Type dataType)>();
             for (var i = 0; i < columns.Count; i++){
                 var column = columns[i];
 
@@ -38,7 +39,7 @@ namespace DbLight.Mapping
                     columnName = column.ColumnName;
                 }
 
-                _columns.Add((tableName, columnName));
+                _columns.Add((tableName, columnName, column.DataType));
             }
 
             _converter = converter;
@@ -68,6 +69,7 @@ namespace DbLight.Mapping
                 }
 
                 var column = _columns[i];
+
                 var objectItemIndex = _model.Members.FindIndex(x =>
                     x.ColumnName.Equals(column.TableName, StringComparison.OrdinalIgnoreCase));
                 if (objectItemIndex < 0){
@@ -86,7 +88,7 @@ namespace DbLight.Mapping
                         continue;
                     }
 
-                    p.PropertyInfo.SetValue(item, value);
+                    SetPropertyValue(p.PropertyInfo, item, value);
                 }
                 else{
                     var objectItemInfo = _model.Members[objectItemIndex];
@@ -117,7 +119,7 @@ namespace DbLight.Mapping
                         continue;
                     }
 
-                    p.PropertyInfo.SetValue(objectItemValue, value);
+                    SetPropertyValue(p.PropertyInfo, objectItemValue, value);
                 }
             }
 
@@ -168,7 +170,7 @@ namespace DbLight.Mapping
                         continue;
                     }
 
-                    p.PropertyInfo.SetValue(tupleItems[tupleItemIndex], value);
+                    SetPropertyValue(p.PropertyInfo, tupleItems[tupleItemIndex], value);
                 }
                 else if (tupleItemInfo.Model.Kind == DbModelKind.Tuple){
                     var p = tupleItemInfo.Model.Members.Find(x =>
@@ -181,10 +183,10 @@ namespace DbLight.Mapping
                         continue;
                     }
 
-                    p.FieldInfo.SetValue(tupleItems[tupleItemIndex], value);
+                    SetFieldValue(p.FieldInfo, tupleItems[tupleItemIndex], value);
                 }
                 else if (tupleItemInfo.Model.Kind == DbModelKind.Value){
-                    tupleItemInfo.FieldInfo.SetValue(tupleObj, value);
+                    SetFieldValue(tupleItemInfo.FieldInfo, tupleObj, value);
                 }
             }
 
@@ -197,6 +199,41 @@ namespace DbLight.Mapping
 
             _results.Add(_converter((T1) tupleObj));
         }
+
+        private void SetPropertyValue(PropertyInfo p, object obj, object value){
+            if (p.PropertyType == typeof(decimal)){
+                p.SetValue(obj, Convert.ToDecimal(value));
+                return;
+            }
+            else if (p.PropertyType == typeof(double)){
+                p.SetValue(obj, Convert.ToDouble(value));
+                return;
+            }
+            else if (p.PropertyType == typeof(int)){
+                p.SetValue(obj, Convert.ToInt32(value));
+                return;
+            }
+
+            p.SetValue(obj, value);
+        }
+
+        private void SetFieldValue(FieldInfo p, object obj, object value){
+            if (p.FieldType == typeof(decimal)){
+                p.SetValue(obj, Convert.ToDecimal(value));
+                return;
+            }
+            else if (p.FieldType == typeof(double)){
+                p.SetValue(obj, Convert.ToDouble(value));
+                return;
+            }
+            else if (p.FieldType == typeof(int)){
+                p.SetValue(obj, Convert.ToInt32(value));
+                return;
+            }
+
+            p.SetValue(obj, value);
+        }
+
 
         public List<T2> ToList(){
             return _results;

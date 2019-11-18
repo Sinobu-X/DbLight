@@ -51,7 +51,7 @@ namespace DbLightTest.MSSQL
             var db = new DbContext(GetConnection());
             var query = db.Query<User>()
                 .Select(x => x.UserId)
-                .Select(x => x.Income, "{0} - 100.00::money", x => x.Income);
+                .Select(x => x.Income, "{0} - 100.00", x => x.Income);
 
             Console.WriteLine(query.ToString());
             Console.WriteLine(JsonConvert.SerializeObject(query.ToList()));
