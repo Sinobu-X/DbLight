@@ -90,21 +90,39 @@ namespace DbLight
 
         //Async for NoQuery
         public async Task ExecNoQueryAsync(IEnumerable<string> batchSql){
-            var sb = new StringBuilder();
-            var contentLength = 0;
-            foreach (var sql in batchSql){
-                contentLength += sql.Length;
-                sb.Append(sql);
-
-                if (contentLength > 8000){
-                    await ExecNoQueryAsync(sb.ToString());
-                    sb = new StringBuilder();
-                    contentLength = 0;
-                }
+            var needBeginTransaction = false;
+            if (!_inner.TransactionOpened){
+                needBeginTransaction = true;
+                await _inner.BeginTransactionAsync();
             }
 
-            if (contentLength > 0){
-                await ExecNoQueryAsync(sb.ToString());
+            try{
+                var sb = new StringBuilder();
+                var contentLength = 0;
+                foreach (var sql in batchSql){
+                    contentLength += sql.Length;
+                    sb.Append(sql);
+
+                    if (contentLength > 8000){
+                        await ExecNoQueryAsync(sb.ToString());
+                        sb = new StringBuilder();
+                        contentLength = 0;
+                    }
+                }
+
+                if (contentLength > 0){
+                    await ExecNoQueryAsync(sb.ToString());
+                }
+
+                if (needBeginTransaction){
+                    _inner.Commit();
+                }
+            }
+            catch(Exception){
+                if (needBeginTransaction){
+                   _inner.Rollback();
+                }
+                throw;
             }
         }
 
@@ -113,21 +131,39 @@ namespace DbLight
         }
 
         public void ExecNoQuery(IEnumerable<string> batchSql){
-            var sb = new StringBuilder();
-            var contentLength = 0;
-            foreach (var sql in batchSql){
-                contentLength += sql.Length;
-                sb.Append(sql);
-
-                if (contentLength > 8000){
-                    ExecNoQuery(sb.ToString());
-                    sb = new StringBuilder();
-                    contentLength = 0;
-                }
+            var needBeginTransaction = false;
+            if (!_inner.TransactionOpened){
+                needBeginTransaction = true;
+                _inner.BeginTransaction();
             }
 
-            if (contentLength > 0){
-                ExecNoQuery(sb.ToString());
+            try{
+                var sb = new StringBuilder();
+                var contentLength = 0;
+                foreach (var sql in batchSql){
+                    contentLength += sql.Length;
+                    sb.Append(sql);
+
+                    if (contentLength > 8000){
+                        ExecNoQuery(sb.ToString());
+                        sb = new StringBuilder();
+                        contentLength = 0;
+                    }
+                }
+
+                if (contentLength > 0){
+                    ExecNoQuery(sb.ToString());
+                }
+
+                if (needBeginTransaction){
+                    _inner.Commit();
+                }
+            }
+            catch(Exception){
+                if (needBeginTransaction){
+                    _inner.Rollback();
+                }
+                throw;
             }
         }
 

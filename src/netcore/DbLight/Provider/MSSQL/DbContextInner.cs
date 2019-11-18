@@ -500,7 +500,7 @@ namespace DbLight.Provider.MSSQL
                         using (var cmd = new SqlCommand()){
                             cmd.Connection = cn;
                             cmd.CommandTimeout = 0;
-                            //cmd.Transaction = _trans_sqlserver;
+                            //cmd.Transaction = _trans;
                             cmd.CommandType = CommandType.Text;
                             cmd.CommandText = sql;
 
@@ -548,7 +548,7 @@ namespace DbLight.Provider.MSSQL
                         using (var cmd = new SqlCommand()){
                             cmd.Connection = cn;
                             cmd.CommandTimeout = 0;
-                            //cmd.Transaction = _trans_sqlserver;
+                            //cmd.Transaction = _trans;
                             cmd.CommandType = CommandType.Text;
                             cmd.CommandText = sql;
 

@@ -1,14 +1,12 @@
 using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using DbLight;
-using DbLight.Common;
 using DbLight.Sql;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace DbLightTest.Postgres
+namespace DbLightTest.MSSQL
 {
     public class TestSelect : TestBase
     {
@@ -61,9 +59,6 @@ namespace DbLightTest.Postgres
 
         [Test]
         public void ChildQueryAtColumn(){
-            //SELECT "Item1"."user_id" AS "Item1.user_id", "Item1"."income" AS "Item1.income",
-            //(SELECT (MAX("a"."role_id")) AS "role_id" FROM "public"."role" AS "a") AS "Item2.Item2"
-            //FROM "public"."user" AS "Item1"
 
             var db = new DbContext(GetConnection());
             var query = db.Query<(User User, int MaxRoleId)>()
@@ -79,6 +74,16 @@ namespace DbLightTest.Postgres
                 Income = x.User.Income,
                 MaxRoleId = x.MaxRoleId
             })));
+        }
+
+        [Test]
+        public async Task Max(){
+            var db = new DbContext(GetConnection());
+            var maxUserId = await db.Query<User>()
+                .Max(x => x.UserId)
+                .ToFirstAsync(x => x.UserId);
+
+            Console.WriteLine($"Max Id = {maxUserId}");
         }
 
         [Test]
@@ -132,6 +137,28 @@ namespace DbLightTest.Postgres
                 JsonConvert.SerializeObject(query.ToList()));
         }
 
+        [Test]
+        public void UnionAll(){
+            var db = new DbContext(GetConnection());
+            var query = db.Query<User>()
+                .Select(x => new{
+                    x.UserId,
+                    x.UserName
+                })
+                .Where(x => x.UserId == 4)
+                .UnionAll(db.Query<User>()
+                    .Select(x => new{
+                        x.UserId,
+                        x.UserName
+                    })
+                    .Where(x => x.UserId == 3)
+                );
+
+            Console.WriteLine(query.ToString());
+            Console.WriteLine(
+                JsonConvert.SerializeObject(query.ToList()));
+        }
+
 
         [Test]
         public void WhereLike(){
@@ -150,10 +177,6 @@ namespace DbLightTest.Postgres
         [Test]
         public void WhereInArray(){
             var db = new DbContext(GetConnection());
-
-            //SELECT * FROM "public"."user" AS "a"
-            //WHERE "a"."user_id" IN (1, 2, 3)
-            //OR "a"."user_name" IN ('a', 'b', 'c')
 
             var userIds = new[]{1, 2, 3};
             var userNames = new[]{"a", "b", "c"};
@@ -219,23 +242,16 @@ namespace DbLightTest.Postgres
                 Console.WriteLine(
                     JsonConvert.SerializeObject(query.ToList()));
             }
+
         }
-        
+
         [Test]
         public void WhereInExpress(){
             var db = new DbContext(GetConnection());
 
-            //SELECT * FROM "public"."user" AS "a"
-            //WHERE "a"."user_id" > 3
-            //AND "a"."user_id" IN(
-            //    SELECT "a"."user_id" AS "user_id"
-            //    FROM "public"."role_user" AS "a"
-            //    WHERE "a"."role_id" = 4)
-
-
             {
                 var query = db.Query<User>()
-                    .Where(x => db.Exp("SELECT \"user_id\" From \"role_user\" WHERE \"role_id\" = 1").Contains(x.UserId));
+                    .Where(x => db.Exp("SELECT UserId From [RoleUser] WHERE [RoleId] = 1").Contains(x.UserId));
 
                 Console.WriteLine(query.ToString());
                 Console.WriteLine(

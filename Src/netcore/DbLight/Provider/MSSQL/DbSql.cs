@@ -7,14 +7,18 @@ namespace DbLight.Provider.MSSQL
     internal class DbSqlInner : IDbSqlInner
     {
         public string GetTableName(DbConnection connection, string database, string schema, string table){
-            var item = connection.Groups.Find(x =>
-                x.virtualName.Equals(database, StringComparison.OrdinalIgnoreCase));
-            if (item.virtualName == null){
-                return "[" + database + "]..[" + table + "]";
+            if (string.IsNullOrEmpty(database)){
+                return $"[{table}]";
             }
-
             else{
-                return "[" + item.realName + "]..[" + table + "]";
+                var item = connection.Groups.Find(x =>
+                    x.virtualName.Equals(database, StringComparison.OrdinalIgnoreCase));
+                if (item.virtualName == null){
+                    return $"[{database}]..[{table}]";
+                }
+                else{
+                    return $"[{item.realName}]..[{table}]";
+                }
             }
         }
 

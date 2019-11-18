@@ -73,6 +73,8 @@ namespace DbLight.Sql
         private readonly List<(SqlOrderByType OrderByType, DbColumnModelInfo Column)> _orderBys =
             new List<(SqlOrderByType OrderByType, DbColumnModelInfo Column)>();
 
+        private readonly List<string> _unions = new List<string>();
+
         private SqlQuery(){
             ModelInfo = DbModelHelper.GetModelInfo(typeof(T));
             From();
@@ -108,6 +110,7 @@ namespace DbLight.Sql
             _groupBys.Clear();
             _havingExpress = null;
             _orderBys.Clear();
+            _unions.Clear();
             return this;
         }
 
@@ -328,6 +331,26 @@ namespace DbLight.Sql
                 _orderBys.Add((orderByType, item));
             }
 
+            return this;
+        }
+
+        public SqlQuery<T> UnionAll<TX>(SqlQuery<TX> query) where TX : new(){
+            _unions.Add("UNION ALL " + query.ToString());
+            return this;
+        }
+
+        public SqlQuery<T> UnionAll(string sql){
+            _unions.Add("UNION ALL " + sql);
+            return this;
+        }
+        
+        public SqlQuery<T> Union<TX>(SqlQuery<TX> query) where TX : new(){
+            _unions.Add("UNION " + query.ToString());
+            return this;
+        }
+
+        public SqlQuery<T> Union(string sql){
+            _unions.Add("UNION " + sql);
             return this;
         }
 
@@ -583,6 +606,13 @@ namespace DbLight.Sql
                 var sub = DbSql.TopSqlLimit(Connection, _top);
                 if (!string.IsNullOrEmpty(sub)){
                     sql.Append(sub);
+                }
+            }
+
+            if (_unions.Count > 0){
+                foreach (var item in _unions){
+                    sql.Append(" ");
+                    sql.Append(item);
                 }
             }
 
