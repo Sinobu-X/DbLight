@@ -159,8 +159,9 @@ public async Task InsertAsync(){
     user.Income = 0.14m;
     user.Married = true;
     user.Remark = "中文";
-    user.RegisterTime = DateTime.Now;
     user.SexId = 2;
+    //user.Photo = File.ReadAllBytes(@"your/path/image.png");
+    user.RegisterTime = DateTime.Now;
 
     await db.Insert(user).ExecuteAsync();
 }
@@ -181,8 +182,9 @@ public async Task UpdateAsync(){
     user.Income = 1.14m;
     user.Married = false;
     user.Remark = "中文";
+    user.SexId = 2;
+    //user.Photo = File.ReadAllBytes(@"your/path/image.png");
     user.RegisterTime = DateTime.Now;
-    user.SexId = 1;
 
     var updCount = await db.Update(user)
         .Where(x => x.UserId == user.UserId)
