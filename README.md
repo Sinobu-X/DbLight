@@ -17,7 +17,7 @@ paket add DbLightCore --version 2.0.2
 
 ## Quick Start
 
-### Table & Model for MSSQL
+#### Table & Model for MSSQL
 ```sql
 CREATE TABLE [dbo].[User](
     [UserId] [INT] NOT NULL,
@@ -68,7 +68,7 @@ public class Sex
 }
 ```
 
-### Table & Model for Postgres
+#### Table & Model for Postgres
 ```sql
 create table "user"
 (
@@ -149,7 +149,7 @@ public class Sex
 }
 ```
 
-### Query
+#### Query
 ```csharp
 public static DbConnection BuildConnection(){
     return new DbConnection(DbDatabaseType.SqlServer,
@@ -166,7 +166,7 @@ public void Query(){
 }
 ```
 
-### Async Query
+#### Async Query
 ```csharp
 public async Task QueryAsync(){
     var db = new DbContext(BuildConnection());
@@ -178,7 +178,7 @@ public async Task QueryAsync(){
 }
 ```
 
-### Query Multiple Tables
+#### Query Multiple Tables
 ```csharp
 public async Task QueryMultiTableAsync(){
     var db = new DbContext(BuildConnection());
@@ -196,7 +196,7 @@ public async Task QueryMultiTableAsync(){
 }
 ```
 
-### Insert
+#### Insert
 ```csharp
 public async Task InsertAsync(){
     var db = new DbContext(BuildConnection());
@@ -219,7 +219,7 @@ public async Task InsertAsync(){
 }
 ```
 
-### Update
+#### Update
 ```csharp
 public async Task UpdateAsync(){
     var db = new DbContext(BuildConnection());
@@ -246,7 +246,7 @@ public async Task UpdateAsync(){
 }
 ```
 
-### Partial Update
+#### Partial Update
 ```csharp
 public async Task UpdatePartAsync(){
     var db = new DbContext(BuildConnection());
@@ -268,7 +268,7 @@ public async Task UpdatePartAsync(){
 }
 ```
 
-### Delete
+#### Delete
 ```csharp
 public async Task DeleteAsync(){
     var db = new DbContext(BuildConnection());
@@ -281,7 +281,7 @@ public async Task DeleteAsync(){
 }
 ```
 
-### Transaction
+#### Transaction
 ```csharp
 public async Task Transaction(){
     using (var db = new DbContext(BuildConnection())){
@@ -314,7 +314,7 @@ public async Task Transaction(){
 }
 ```
 
-### Batch
+#### Batch
 ```csharp
 public async Task Batch(){
     var db = new DbContext(BuildConnection());
@@ -344,12 +344,24 @@ public async Task Batch(){
 ```
 
 ## How to use test sample
+#### MSSQL
 ```
 1. open src/netcore/DbLightTest/MSSQL/DbScript.sql to copy script to excute in database.
 2. open src/netcore/DbLightTest/MSSQL/QuickStart.cs to edit connection string at function "BuildConnection"
         public static DbConnection BuildConnection(){
             return new DbConnection(DbDatabaseType.SqlServer,
                 "server=127.0.0.1;uid=test;pwd=test;database=DbLight");
+        }
+3. select a test function to run.
+```
+
+#### Postgres
+```
+1. open src/netcore/DbLightTest/Postgres/DbScript.sql to copy script to excute in database.
+2. open src/netcore/DbLightTest/Postgres/QuickStart.cs to edit connection string at function "BuildConnection"
+        public static DbConnection BuildConnection(){
+            return new DbConnection(DbDatabaseType.Postgres,
+                "Host=127.0.0.1;Username=test;Password=test;Database=dblight");
         }
 3. select a test function to run.
 ```

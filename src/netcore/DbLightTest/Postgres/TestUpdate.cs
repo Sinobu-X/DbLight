@@ -10,11 +10,11 @@ using NUnit.Framework;
 
 namespace DbLightTest.Postgres
 {
-    public class TestUpdate : TestBase
+    public class TestUpdate
     {
         [Test]
         public async Task ByInt1(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 12;
@@ -42,7 +42,7 @@ namespace DbLightTest.Postgres
         
         [Test]
         public async Task ByInt2(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 12;
@@ -72,7 +72,7 @@ namespace DbLightTest.Postgres
 
         [Test]
         public async Task IgnoreColumn(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 12;
@@ -102,7 +102,7 @@ namespace DbLightTest.Postgres
 
         [Test]
         public async Task UpdateExpress(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 12;

@@ -10,11 +10,11 @@ using NUnit.Framework;
 
 namespace DbLightTest.Postgres
 {
-    public class TestInsert : TestBase
+    public class TestInsert
     {
         [Test]
         public async Task Normal(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 12;
@@ -36,7 +36,7 @@ namespace DbLightTest.Postgres
 
         [Test]
         public async Task InsertFile(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 13;
