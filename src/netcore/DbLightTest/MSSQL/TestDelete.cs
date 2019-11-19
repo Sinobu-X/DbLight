@@ -10,11 +10,11 @@ using NUnit.Framework;
 
 namespace DbLightTest.MSSQL
 {
-    public class TestDelete : TestBase
+    public class TestDelete
     {
         [Test]
         public async Task ByInt1(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var del = db.Delete<User>().Where(x => x.UserId == 12);
 
@@ -26,7 +26,7 @@ namespace DbLightTest.MSSQL
         
         [Test]
         public async Task ByInt2(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var del = db.Delete<User>()
                 .WhereBegin()
@@ -41,7 +41,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public async Task ByString1(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var del = db.Delete<User>().Where(x => x.UserName == "abc");
 
@@ -53,7 +53,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public async Task ByString2(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var del = db.Delete<User>()
                 .WhereBegin()
@@ -68,7 +68,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public async Task DeleteAll(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var del = db.Delete<User>();
 

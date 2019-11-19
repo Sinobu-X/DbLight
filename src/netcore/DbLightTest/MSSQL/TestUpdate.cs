@@ -10,11 +10,11 @@ using NUnit.Framework;
 
 namespace DbLightTest.MSSQL
 {
-    public class TestUpdate : TestBase
+    public class TestUpdate
     {
         [Test]
         public async Task ByInt1(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 12;
@@ -31,7 +31,7 @@ namespace DbLightTest.MSSQL
             user.SexId = 2;
 
             var upd = db.Update(user)
-                .Select(x => x, x => x.Photo)
+                .Deselect(x => x.Photo)
                 .Where(x => x.UserId == 12);
 
             Console.WriteLine(upd.ToString());
@@ -42,7 +42,7 @@ namespace DbLightTest.MSSQL
         
         [Test]
         public async Task ByInt2(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 12;
@@ -59,7 +59,6 @@ namespace DbLightTest.MSSQL
             user.SexId = 2;
 
             var del = db.Update(user)
-                .Select(x => x)
                 .WhereBegin()
                 .Compare(x => x.UserId, SqlCompareType.Equal, 12)
                 .WhereEnded();
@@ -72,7 +71,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public async Task IgnoreColumn(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 12;
@@ -88,7 +87,7 @@ namespace DbLightTest.MSSQL
             user.SexId = 2;
 
             var del = db.Update(user)
-                .Select(x => x, x => new{
+                .Deselect(x => new{
                     x.UserId,
                     x.Photo
                 })
@@ -102,7 +101,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public async Task UpdateExpress(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 12;

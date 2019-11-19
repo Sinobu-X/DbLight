@@ -18,7 +18,8 @@ namespace DbLight.Sql
         private readonly DbContext _context;
         private readonly DbTableModelInfo _from;
         private T _item;
-        private readonly List<DbColumnModelInfo> _columns = new List<DbColumnModelInfo>();
+        private readonly List<DbColumnModelInfo> _includeColumns = new List<DbColumnModelInfo>();
+        private readonly List<DbColumnModelInfo> _excludeColumns = new List<DbColumnModelInfo>();
         private readonly List<string> _expressions = new List<string>();
         private bool _closeIdentify;
         private string _whereExpress;
@@ -52,32 +53,17 @@ namespace DbLight.Sql
         }
 
         public SqlUpdate<T> Select<T1>(Expression<Func<T, T1>> columns){
-            return Select<T1, T1>(columns, null);
-        }
-
-        public SqlUpdate<T> Select<T1, T2>(Expression<Func<T, T1>> columns,
-            Expression<Func<T, T2>> ignoreColumns){
-            var selectItems = DbExpressionHelper.ReadColumnExpression(columns, ModelInfo);
-            var ignoreItems = ignoreColumns != null
-                ? DbExpressionHelper.ReadColumnExpression(ignoreColumns, ModelInfo)
-                : new List<DbColumnModelInfo>();
-
-            for (var i = selectItems.Count - 1; i >= 0; i--){
-                var item = selectItems[i];
-                if (ignoreItems.Exists(x => x.Column == item.Column)){
-                    selectItems.RemoveAt(i);
-                }
-            }
-
-            foreach (var item in selectItems){
-                _columns.Add(item);
-            }
-
+            _includeColumns.AddRange(DbExpressionHelper.ReadColumnExpression(columns, ModelInfo));
             return this;
         }
 
         public SqlUpdate<T> Select<T1>(string expression, Expression<Func<T, T1>> parameters){
             _expressions.Add(DbExpressionHelper.ReadEditAnyExpression(Connection, ModelInfo, expression, parameters));
+            return this;
+        }
+
+        public SqlUpdate<T> Deselect<T1>(Expression<Func<T, T1>> columns){
+            _excludeColumns.AddRange(DbExpressionHelper.ReadColumnExpression(columns, ModelInfo));
             return this;
         }
 
@@ -129,8 +115,15 @@ namespace DbLight.Sql
             }
 
             members = members.FindAll(x => {
-                if (!_columns.Exists(y => string.Equals(y.Column, x.ColumnName, StringComparison.OrdinalIgnoreCase))){
-                    return false;
+                if (_includeColumns.Count > 0){
+                    if (!_includeColumns.Exists(y => string.Equals(y.Column, x.ColumnName, StringComparison.OrdinalIgnoreCase))){
+                        return false;
+                    }
+                }
+                else if (_excludeColumns.Count > 0){
+                    if (_excludeColumns.Exists(y => string.Equals(y.Column, x.ColumnName, StringComparison.OrdinalIgnoreCase))){
+                        return false;
+                    }
                 }
 
                 if (x.NotMapped){

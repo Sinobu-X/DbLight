@@ -31,7 +31,7 @@ namespace DbLightTest.Postgres
             user.SexId = 2;
 
             var upd = db.Update(user)
-                .Select(x => x, x => x.Photo)
+                .Select(x => x.Photo)
                 .Where(x => x.UserId == 12);
 
             Console.WriteLine(upd.ToString());
@@ -88,7 +88,7 @@ namespace DbLightTest.Postgres
             user.SexId = 2;
 
             var del = db.Update(user)
-                .Select(x => x, x => new{
+                .Select(x => new{
                     x.UserId,
                     x.Photo
                 })

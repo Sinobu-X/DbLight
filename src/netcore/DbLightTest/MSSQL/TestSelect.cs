@@ -8,11 +8,11 @@ using NUnit.Framework;
 
 namespace DbLightTest.MSSQL
 {
-    public class TestSelect : TestBase
+    public class TestSelect
     {
         [Test]
         public void Top(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<User>()
                 .Top(3)
                 .OrderBy(x => x.UserId);
@@ -23,7 +23,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void Distinct(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<User>()
                 .Distinct()
                 .Select(x => x.SexId)
@@ -35,7 +35,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void IgnoreColumn(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<User>()
                 .SelectWithIgnore(x => x, x => new{
                     x.Photo,
@@ -48,7 +48,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void ExpressColumn(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<User>()
                 .Select(x => x.UserId)
                 .Select(x => x.Income, "{0} - 100.00", x => x.Income);
@@ -60,7 +60,7 @@ namespace DbLightTest.MSSQL
         [Test]
         public void ChildQueryAtColumn(){
 
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<(User User, int MaxRoleId)>()
                 .Select(x => new{
                     x.User.UserId,
@@ -78,7 +78,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public async Task Max(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var maxUserId = await db.Query<User>()
                 .Max(x => x.UserId)
                 .ToFirstAsync(x => x.UserId);
@@ -88,7 +88,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void MaxAndCount(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<(User User, long Count)>()
                 .Select(x => x.User.SexId)
                 .Max(x => x.User.UserId)
@@ -107,7 +107,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void LeftJoin(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<(User User, Sex Sex)>()
                 .Select(x => new{
                     x.User,
@@ -123,7 +123,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void InnerJoin(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<(User User, Sex Sex)>()
                 .Select(x => new{
                     x.User,
@@ -139,7 +139,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void UnionAll(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<User>()
                 .Select(x => new{
                     x.UserId,
@@ -162,7 +162,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void WhereLike(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<User>()
                 .WhereBegin()
                 .Like(x => x.UserName, SqlLikeType.Equal, "name 12")
@@ -176,7 +176,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void WhereInArray(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var userIds = new[]{1, 2, 3};
             var userNames = new[]{"a", "b", "c"};
@@ -205,7 +205,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void WhereInQuery(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             //SELECT * FROM "public"."user" AS "a"
             //WHERE "a"."user_id" > 3
@@ -247,7 +247,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void WhereInExpress(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             {
                 var query = db.Query<User>()

@@ -11,11 +11,11 @@ using NUnit.Framework;
 
 namespace DbLightTest.MSSQL
 {
-    public class TestInsert : TestBase
+    public class TestInsert
     {
         [Test]
         public async Task Normal(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 12;
@@ -37,7 +37,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public async Task InsertFile(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
             user.UserId = 13;
@@ -60,7 +60,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public async Task InsertBatch(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
 
             var maxUserId = await db.Query<User>()
                 .Max(x => x.UserId)

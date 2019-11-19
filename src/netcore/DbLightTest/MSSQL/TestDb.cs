@@ -10,11 +10,11 @@ using NUnit.Framework;
 
 namespace DbLightTest.MSSQL
 {
-    public class TestDb : TestBase
+    public class TestDb
     {
         [Test]
         public void Connection(){
-            var db = new DbContext(GetConnection());
+            var db = new DbContext(QuickStart.BuildConnection());
             var list = db.ExecQueryToList<User>("SELECT * FROM [User]");
             Console.WriteLine(JsonConvert.SerializeObject(list));
         }
@@ -24,7 +24,7 @@ namespace DbLightTest.MSSQL
             for (var i = 0; i < 10; i++){
                 var sw = new Stopwatch();
                 sw.Start();
-                var db = new DbContext(GetConnection());
+                var db = new DbContext(QuickStart.BuildConnection());
                 var list = db.ExecQueryToList<User>("SELECT * FROM [User]");
                 Console.WriteLine(JsonConvert.SerializeObject(list));
                 Console.WriteLine(sw.ElapsedMilliseconds);
