@@ -53,20 +53,20 @@ public class User
 ```sql
 create table "user"
 (
-	user_id integer not null
-		constraint user_pk
-			primary key,
-	user_name varchar(64),
-	we_chat_code varchar(64),
-	phone varchar(16),
-	birthday date,
-	income money,
-	height numeric,
-	sex_id integer,
-	married boolean,
-	remark text,
-	photo bytea,
-	register_time time
+    user_id integer not null
+        constraint user_pk
+            primary key,
+    user_name varchar(64),
+    we_chat_code varchar(64),
+    phone varchar(16),
+    birthday date,
+    income money,
+    height numeric,
+    sex_id integer,
+    married boolean,
+    remark text,
+    photo bytea,
+    register_time time
 );
 ```
 
