@@ -11,11 +11,14 @@ namespace DbLightTest.MSSQL
 {
     public class QuickStart
     {
+        public static DbConnection BuildConnection(){
+            return new DbConnection(DbDatabaseType.SqlServer,
+                "server=127.0.0.1;uid=test;pwd=test;database=DbLight");
+        }
+
         [Test]
         public void Query(){
-            var cn = new DbConnection(DbDatabaseType.SqlServer,
-                "server=127.0.0.1;uid=test;pwd=test;database=DbLight");
-            var db = new DbContext(cn);
+            var db = new DbContext(BuildConnection());
             var users = db.Query<User>()
                 .Where(x => x.UserId >= 1 && x.UserId < 10)
                 .ToList();
@@ -25,9 +28,7 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public async Task QueryAsync(){
-            var cn = new DbConnection(DbDatabaseType.SqlServer,
-                "server=127.0.0.1;uid=test;pwd=test;database=DbLight");
-            var db = new DbContext(cn);
+            var db = new DbContext(BuildConnection());
             var users = await db.Query<User>()
                 .Where(x => x.UserId >= 1 && x.UserId < 10)
                 .ToListAsync();
@@ -188,9 +189,5 @@ namespace DbLightTest.MSSQL
         }
 
 
-        public static DbConnection BuildConnection(){
-            return new DbConnection(DbDatabaseType.SqlServer,
-                "server=127.0.0.1;uid=test;pwd=test;database=DbLight");
-        }
     }
 }

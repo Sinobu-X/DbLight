@@ -151,10 +151,13 @@ public class Sex
 
 ### Query
 ```csharp
-public void Query(){
-    var cn = new DbConnection(DbDatabaseType.SqlServer,
+public static DbConnection BuildConnection(){
+    return new DbConnection(DbDatabaseType.SqlServer,
         "server=127.0.0.1;uid=test;pwd=test;database=DbLight");
-    var db = new DbContext(cn);
+}
+
+public void Query(){
+    var db = new DbContext(BuildConnection());
     var users = db.Query<User>()
         .Where(x => x.UserId >= 1 && x.UserId < 10)
         .ToList();
@@ -166,9 +169,7 @@ public void Query(){
 ### Async Query
 ```csharp
 public async Task QueryAsync(){
-    var cn = new DbConnection(DbDatabaseType.SqlServer,
-        "server=127.0.0.1;uid=test;pwd=test;database=DbLight");
-    var db = new DbContext(cn);
+    var db = new DbContext(BuildConnection());
     var users = await db.Query<User>()
         .Where(x => x.UserId >= 1 && x.UserId < 10)
         .ToListAsync();
@@ -179,11 +180,6 @@ public async Task QueryAsync(){
 
 ### Query Multiple Tables
 ```csharp
-public static DbConnection BuildConnection(){
-    return new DbConnection(DbDatabaseType.SqlServer,
-        "server=127.0.0.1;uid=test;pwd=test;database=DbLight");
-}
-
 public async Task QueryMultiTableAsync(){
     var db = new DbContext(BuildConnection());
 
@@ -345,4 +341,15 @@ public async Task Batch(){
 
     await db.ExecNoQueryAsync(batchSqls);
 }
+```
+
+## How to use test sample
+```
+1. open src/netcore/DbLightTest/MSSQL/DbScript.sql to copy script to excute in database.
+2. open src/netcore/DbLightTest/MSSQL/QuickStart.cs to edit connection string at function "BuildConnection"
+        public static DbConnection BuildConnection(){
+            return new DbConnection(DbDatabaseType.SqlServer,
+                "server=127.0.0.1;uid=test;pwd=test;database=DbLight");
+        }
+3. select a test function to run.
 ```
