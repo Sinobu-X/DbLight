@@ -1,7 +1,0 @@
-.idea
-.vs
-.DS_Store
-release/
-bin/
-obj/
-*.nupkg
