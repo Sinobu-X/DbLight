@@ -5,7 +5,13 @@ Supports MSSQL, Postgres
 
 ## Nuget
 ```csharp
-Install-Package DbLightCore
+Install-Package DbLightCore -Version 2.0.1
+
+dotnet add package DbLightCore --version 2.0.1
+
+<PackageReference Include="DbLightCore" Version="2.0.1" />
+
+paket add DbLightCore --version 2.0.1
 ```
 
 
