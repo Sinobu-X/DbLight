@@ -5,13 +5,13 @@ Supports MSSQL, Postgres
 
 ## Nuget
 ```csharp
-Install-Package DbLightCore -Version 2.0.1
+Install-Package DbLightCore -Version 2.0.2
 
-dotnet add package DbLightCore --version 2.0.1
+dotnet add package DbLightCore --version 2.0.2
 
-<PackageReference Include="DbLightCore" Version="2.0.1" />
+<PackageReference Include="DbLightCore" Version="2.0.2" />
 
-paket add DbLightCore --version 2.0.1
+paket add DbLightCore --version 2.0.2
 ```
 
 
@@ -35,6 +35,13 @@ CREATE TABLE [dbo].[User](
 CONSTRAINT [PK_User] PRIMARY KEY CLUSTERED(
     [UserId] ASC
 )WITH (PAD_INDEX  = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]) ON [PRIMARY]
+
+CREATE TABLE [dbo].[Sex](
+    [SexId] [INT] NOT NULL,
+    [SexName] [NVARCHAR](128) NOT NULL,
+CONSTRAINT [PK_Sex] PRIMARY KEY CLUSTERED(
+    [SexId] ASC
+)WITH (PAD_INDEX  = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]) ON [PRIMARY]
 ```
 
 ```csharp
@@ -52,6 +59,12 @@ public class User
     public string Remark{ get; set; } = "";
     public byte[] Photo{ get; set; }
     public DateTime RegisterTime{ get; set; }
+}
+
+public class Sex
+{
+    public int SexId{ get; set; }
+    public string SexName{ get; set; }
 }
 ```
 
@@ -74,6 +87,15 @@ create table "user"
     photo bytea,
     register_time time
 );
+
+create table sex
+(
+    sex_id integer not null
+        constraint sex_pk
+            primary key,
+    sex_name varchar(64)
+);
+
 ```
 
 ```csharp
@@ -115,6 +137,16 @@ public class User
     [Column("register_time")]
     public DateTime RegisterTime{ get; set; }
 }
+
+[Table("sex")]
+public class Sex
+{
+    [Column("sex_id")]
+    public int SexId{ get; set; }
+
+    [Column("sex_name")]
+    public string SexName{ get; set; }
+}
 ```
 
 ### Query
@@ -145,13 +177,31 @@ public async Task QueryAsync(){
 }
 ```
 
-### Insert
+### Query Multiple Tables
 ```csharp
 public static DbConnection BuildConnection(){
     return new DbConnection(DbDatabaseType.SqlServer,
         "server=127.0.0.1;uid=test;pwd=test;database=DbLight");
 }
 
+public async Task QueryMultiTableAsync(){
+    var db = new DbContext(BuildConnection());
+
+    var users = await db.Query<(User User, Sex Sex)>()
+        .Select(x => new{
+            x.User,
+            x.Sex.SexName
+        })
+        .LeftJoin(x => x.Sex, x => x.Sex.SexId == x.User.SexId)
+        .Where(x => x.User.UserId >= 1 && x.User.UserId < 10)
+        .ToListAsync();
+
+    Console.WriteLine(JsonConvert.SerializeObject(users));
+}
+```
+
+### Insert
+```csharp
 public async Task InsertAsync(){
     var db = new DbContext(BuildConnection());
 

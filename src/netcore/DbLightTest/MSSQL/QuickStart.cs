@@ -36,6 +36,22 @@ namespace DbLightTest.MSSQL
         }
 
         [Test]
+        public async Task QueryMultiTableAsync(){
+            var db = new DbContext(BuildConnection());
+
+            var users = await db.Query<(User User, Sex Sex)>()
+                .Select(x => new{
+                    x.User,
+                    x.Sex.SexName
+                })
+                .LeftJoin(x => x.Sex, x => x.Sex.SexId == x.User.SexId)
+                .Where(x => x.User.UserId >= 1 && x.User.UserId < 10)
+                .ToListAsync();
+
+            Console.WriteLine(JsonConvert.SerializeObject(users));
+        }
+
+        [Test]
         public async Task InsertAsync(){
             var db = new DbContext(BuildConnection());
 

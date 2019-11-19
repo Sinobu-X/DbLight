@@ -69,10 +69,11 @@ namespace DbLightTest.MSSQL
             var sw = new Stopwatch();
             sw.Start();
             //-------
+
             var batchSqls = new List<string>();
             var random = new Random();
 
-            for (var i = 0; i < 100; i++){
+            for (var i = 0; i < 10000; i++){
                 var user = new User();
                 user.UserId = (i + 1) + maxUserId;
                 user.UserName = "Name " + user.UserId;
@@ -89,9 +90,12 @@ namespace DbLightTest.MSSQL
                 batchSqls.Add(db.Insert(user).ToString());
             }
 
+            //-----
+            Console.WriteLine($"Create SQL ms = {sw.ElapsedMilliseconds}");
+
             await db.ExecNoQueryAsync(batchSqls);
             //-----
-            Console.WriteLine($"ms = {sw.ElapsedMilliseconds}");
+            Console.WriteLine($"Execute SQL ms = {sw.ElapsedMilliseconds}");
             sw.Stop();
 
         }
