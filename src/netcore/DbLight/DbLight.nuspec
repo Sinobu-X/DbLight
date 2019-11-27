@@ -17,6 +17,7 @@
     <dependencies>
       <group targetFramework="netcoreapp2.1">
         <dependency id="System.Data.SqlClient" version="4.6.1" />
+        <dependency id="Npgsql" version="4.1.1" />
       </group>
     </dependencies>
   </metadata>
