@@ -258,5 +258,36 @@ namespace DbLightTest.MSSQL
                     JsonConvert.SerializeObject(query.ToList()));
             }
         }
+
+        [Test]
+        public void WhereAndOr(){
+            var db = new DbContext(QuickStart.BuildConnection());
+
+//            SELECT * FROM [User] AS [a]
+//             WHERE [a].[UserId] > 3
+//               AND ([a].[Height] = 1 OR [a].[SexId] = 1)
+//               AND ([a].[Married] = 0 OR [a].[Remark] = N'a')
+            {
+                var query = db.Query<User>()
+                    .WhereBegin()
+                    .Compare(x => x.UserId, SqlCompareType.Greater, 3)
+
+                    .WhereBegin(SqlWhereJoinType.Or)
+                    .Compare(x => x.Height, SqlCompareType.Equal, 1m)
+                    .Compare(x => x.SexId, SqlCompareType.Equal, 1)
+                    .WhereEnded()
+
+                    .WhereBegin(SqlWhereJoinType.Or)
+                    .Compare(x => x.Married, SqlCompareType.Equal, false)
+                    .Compare(x => x.Remark, SqlCompareType.Equal, "a")
+                    .WhereEnded()
+
+                    .WhereEnded();
+
+                Console.WriteLine(query.ToString());
+                Console.WriteLine(
+                    JsonConvert.SerializeObject(query.ToList()));
+            }
+        }
     }
 }

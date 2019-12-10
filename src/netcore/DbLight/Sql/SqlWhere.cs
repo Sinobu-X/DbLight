@@ -12,8 +12,8 @@ namespace DbLight.Sql
         public DbModelInfo ModelInfo{ get; protected set; }
         public SqlWhereJoinType JoinType{ get; set; } = SqlWhereJoinType.And;
         public SqlWhereType WhereType{ get; protected set; } = SqlWhereType.Query;
-        private readonly List<string> _wheres = new List<string>();
-        private SqlWhere _subWhere;
+        //string|SqlWhere
+        private readonly List<object> _wheres = new List<object>();
 
         protected void AddWhere(Expression expression){
             if (WhereType == SqlWhereType.Query){
@@ -29,8 +29,7 @@ namespace DbLight.Sql
         }
 
         protected void AddWhere(SqlWhere where){
-            _wheres.Add(null);
-            _subWhere = where;
+            _wheres.Add(where);
         }
 
         public override string ToString(){
@@ -38,15 +37,15 @@ namespace DbLight.Sql
 
             var rows = new List<string>();
             _wheres.ForEach(x => {
-                if (x == null && _subWhere != null){
-                    var s = _subWhere.ToString();
-                    if (s != ""){
+                if (x is SqlWhere subWhere){
+                    var s = subWhere.ToString();
+                    if (!string.IsNullOrEmpty(s)){
                         rows.Add(s);
                     }
                 }
-                else{
-                    if (x != ""){
-                        rows.Add(x);
+                else if (x is string s){
+                    if (!string.IsNullOrEmpty(s)){
+                        rows.Add(s);
                     }
                 }
             });
@@ -92,7 +91,7 @@ namespace DbLight.Sql
             return this;
         }
 
-        public SqlWhere<SqlWhere<T>, T> WhereStart(SqlWhereJoinType joinType = SqlWhereJoinType.And){
+        public SqlWhere<SqlWhere<T>, T> WhereBegin(SqlWhereJoinType joinType = SqlWhereJoinType.And){
             var where = new SqlWhere<SqlWhere<T>, T>(this, joinType);
             AddWhere(where);
             return where;
@@ -233,11 +232,7 @@ namespace DbLight.Sql
             return this;
         }
 
-        public SqlWhere<SqlWhere<TP, T>, T> WhereStart(SqlWhereJoinType joinType = SqlWhereJoinType.And){
-            return WhereStart("", joinType);
-        }
-
-        public SqlWhere<SqlWhere<TP, T>, T> WhereStart(string level, SqlWhereJoinType joinType = SqlWhereJoinType.And){
+        public SqlWhere<SqlWhere<TP, T>, T> WhereBegin(SqlWhereJoinType joinType = SqlWhereJoinType.And){
             var where = new SqlWhere<SqlWhere<TP, T>, T>(this, joinType);
             AddWhere(where);
             return where;
