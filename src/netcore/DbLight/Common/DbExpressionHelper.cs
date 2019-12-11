@@ -699,7 +699,12 @@ namespace DbLight.Common
                 strValues.Add(DbSql.ValueToWhereSql(_connection, value));
             }
 
-            return $"{column} IN ({string.Join(", ", strValues)})";
+            if (strValues.Count > 0){
+                return $"{column} IN ({string.Join(", ", strValues)})";
+            }
+            else{
+                return "1 > 2";
+            }
         }
 
         public override string ToString(){
@@ -1100,8 +1105,13 @@ namespace DbLight.Common
                         strValues.Add(valueSql);
                     }
 
-                    var column = ColumnToSql(expression.Arguments[1]);
-                    return string.Format("{0} IN ({1})", column, string.Join(", ", strValues));
+                    if (strValues.Count > 0){
+                        var column = ColumnToSql(expression.Arguments[1]);
+                        return string.Format("{0} IN ({1})", column, string.Join(", ", strValues));
+                    }
+                    else{
+                        return "1 > 2";
+                    }
                 }
                 else{
                     throw GetCallException(expression);

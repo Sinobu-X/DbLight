@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DbLight;
@@ -59,7 +60,6 @@ namespace DbLightTest.MSSQL
 
         [Test]
         public void ChildQueryAtColumn(){
-
             var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<(User User, int MaxRoleId)>()
                 .Select(x => new{
@@ -242,7 +242,6 @@ namespace DbLightTest.MSSQL
                 Console.WriteLine(
                     JsonConvert.SerializeObject(query.ToList()));
             }
-
         }
 
         [Test]
@@ -271,17 +270,45 @@ namespace DbLightTest.MSSQL
                 var query = db.Query<User>()
                     .WhereBegin()
                     .Compare(x => x.UserId, SqlCompareType.Greater, 3)
-
                     .WhereBegin(SqlWhereJoinType.Or)
                     .Compare(x => x.Height, SqlCompareType.Equal, 1m)
                     .Compare(x => x.SexId, SqlCompareType.Equal, 1)
                     .WhereEnded()
-
                     .WhereBegin(SqlWhereJoinType.Or)
                     .Compare(x => x.Married, SqlCompareType.Equal, false)
                     .Compare(x => x.Remark, SqlCompareType.Equal, "a")
                     .WhereEnded()
+                    .WhereEnded();
 
+                Console.WriteLine(query.ToString());
+                Console.WriteLine(
+                    JsonConvert.SerializeObject(query.ToList()));
+            }
+        }
+
+
+        [Test]
+        public void WhereSafeIn(){
+            var db = new DbContext(QuickStart.BuildConnection());
+
+            //SELECT * FROM [User] AS [a] WHERE [a].[UserId] = 1 AND 1 > 2 AND [a].[UserName] IN (N'a', N'b')
+            {
+                var query = db.Query<User>()
+                    .Where(x => x.UserId == 1 &&
+                                (new int[]{ }).Contains(x.SexId) &&
+                                (new []{"a", "b"}).Contains(x.UserName));
+
+                Console.WriteLine(query.ToString());
+                Console.WriteLine(
+                    JsonConvert.SerializeObject(query.ToList()));
+            }
+
+            {
+                var query = db.Query<User>()
+                    .WhereBegin()
+                    .Compare(x => x.UserId, SqlCompareType.Equal, 1)
+                    .In(x => x.SexId, new List<int>())
+                    .In(x => x.UserName, new []{"a", "b"})
                     .WhereEnded();
 
                 Console.WriteLine(query.ToString());
