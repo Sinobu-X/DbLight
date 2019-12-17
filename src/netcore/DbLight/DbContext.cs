@@ -27,6 +27,8 @@ namespace DbLight
             throw new DbUnexpectedDbTypeException();
         }
 
+        public DbConnection Connection => _inner.Connection;
+
         public void Dispose(){
             _inner.Dispose();
         }
