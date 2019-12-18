@@ -558,7 +558,7 @@ namespace DbLight.Sql
                     }
                 }
             }
-
+            
             //GROUP BY
             if (_groupBys.Count > 0){
                 sql.Append(" GROUP BY");
@@ -577,6 +577,14 @@ namespace DbLight.Sql
             if (_havingExpress != null){
                 sql.Append(" HAVING ");
                 sql.Append(_havingExpress);
+            }
+
+            //UNION
+            if (_unions.Count > 0){
+                foreach (var item in _unions){
+                    sql.Append(" ");
+                    sql.Append(item);
+                }
             }
 
             //ORDER BY
@@ -606,13 +614,6 @@ namespace DbLight.Sql
                 var sub = DbSql.TopSqlLimit(Connection, _top);
                 if (!string.IsNullOrEmpty(sub)){
                     sql.Append(sub);
-                }
-            }
-
-            if (_unions.Count > 0){
-                foreach (var item in _unions){
-                    sql.Append(" ");
-                    sql.Append(item);
                 }
             }
 

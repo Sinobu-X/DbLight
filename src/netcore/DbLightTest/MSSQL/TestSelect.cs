@@ -152,7 +152,8 @@ namespace DbLightTest.MSSQL
                         x.UserName
                     })
                     .Where(x => x.UserId == 3)
-                );
+                )
+                .OrderBy(x => x.UserId);
 
             Console.WriteLine(query.ToString());
             Console.WriteLine(
