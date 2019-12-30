@@ -343,7 +343,7 @@ namespace DbLight.Sql
             _unions.Add("UNION ALL " + sql);
             return this;
         }
-        
+
         public SqlQuery<T> Union<TX>(SqlQuery<TX> query) where TX : new(){
             _unions.Add("UNION " + query.ToString());
             return this;
@@ -366,12 +366,20 @@ namespace DbLight.Sql
             return _context.ExecQueryToListAsync<T>(ToString());
         }
 
+        public Task<List<T1>> ToListAsync<T1>() where T1 : new(){
+            return _context.ExecQueryToListAsync<T1>(ToString());
+        }
+
         public Task<List<TResult>> ToListAsync<TResult>(Func<T, TResult> converter){
             return _context.ExecQueryToListAsync(ToString(), converter);
         }
 
         public List<T> ToList(){
             return _context.ExecQueryToList<T>(ToString());
+        }
+
+        public List<T1> ToList<T1>() where T1 : new(){
+            return _context.ExecQueryToList<T1>(ToString());
         }
 
         public List<TResult> ToList<TResult>(Func<T, TResult> converter){
@@ -382,12 +390,20 @@ namespace DbLight.Sql
             return (await ToListAsync()).FirstOrDefault();
         }
 
+        public async Task<T1> ToFirstAsync<T1>() where T1 : new(){
+            return (await ToListAsync<T1>()).FirstOrDefault();
+        }
+
         public async Task<TResult> ToFirstAsync<TResult>(Func<T, TResult> converter){
             return (await ToListAsync(converter)).FirstOrDefault();
         }
 
         public T ToFirst(){
             return ToList().FirstOrDefault();
+        }
+
+        public T1 ToFirst<T1>() where T1 : new(){
+            return ToList<T1>().FirstOrDefault();
         }
 
         public TResult ToFirst<TResult>(Func<T, TResult> converter){
@@ -510,7 +526,7 @@ namespace DbLight.Sql
                 string joinExpression;
                 if (join.expression == null){
                     joinExpression = string.Format("{0} AS {1}",
-                        DbSql.GetTableName(Connection, join.table.Database, _from.Schema, join.table.Table),
+                        DbSql.GetTableName(Connection, join.table.Database, join.table.Schema, join.table.Table),
                         DbSql.GetColumnName(Connection, join.table.Member));
                 }
                 else{
@@ -558,7 +574,7 @@ namespace DbLight.Sql
                     }
                 }
             }
-            
+
             //GROUP BY
             if (_groupBys.Count > 0){
                 sql.Append(" GROUP BY");

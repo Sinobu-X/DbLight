@@ -297,7 +297,7 @@ namespace DbLightTest.MSSQL
                 var query = db.Query<User>()
                     .Where(x => x.UserId == 1 &&
                                 (new int[]{ }).Contains(x.SexId) &&
-                                (new []{"a", "b"}).Contains(x.UserName));
+                                (new[]{"a", "b"}).Contains(x.UserName));
 
                 Console.WriteLine(query.ToString());
                 Console.WriteLine(
@@ -309,12 +309,30 @@ namespace DbLightTest.MSSQL
                     .WhereBegin()
                     .Compare(x => x.UserId, SqlCompareType.Equal, 1)
                     .In(x => x.SexId, new List<int>())
-                    .In(x => x.UserName, new []{"a", "b"})
+                    .In(x => x.UserName, new[]{"a", "b"})
                     .WhereEnded();
 
                 Console.WriteLine(query.ToString());
                 Console.WriteLine(
                     JsonConvert.SerializeObject(query.ToList()));
+            }
+        }
+
+
+        [Test]
+        public void AliasName(){
+            var db = new DbContext(QuickStart.BuildConnection());
+
+            //SELECT * FROM [User] AS [a] WHERE [a].[UserId] = 1 AND 1 > 2 AND [a].[UserName] IN (N'a', N'b')
+            {
+                var query = db.Query<User>()
+                    .Where(x => x.UserId == 1 &&
+                                (new int[]{ }).Contains(x.SexId) &&
+                                (new[]{"a", "b"}).Contains(x.UserName));
+
+                Console.WriteLine(query.ToString());
+                Console.WriteLine(
+                    JsonConvert.SerializeObject(query.ToList<Sex>()));
             }
         }
     }
