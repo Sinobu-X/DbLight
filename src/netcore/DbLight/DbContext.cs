@@ -212,6 +212,10 @@ namespace DbLight
             return new SqlInsert<T>(_inner.Connection, this, item);
         }
 
+        public SqlInsert<T> Insert<T>() where T : new(){
+            return new SqlInsert<T>(_inner.Connection, this);
+        }
+
         public SqlUpdate<T> Update<T>(T item) where T : new(){
             return new SqlUpdate<T>(_inner.Connection, this, item);
         }

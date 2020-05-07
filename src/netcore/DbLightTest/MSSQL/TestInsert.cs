@@ -18,7 +18,7 @@ namespace DbLightTest.MSSQL
             var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
-            user.UserId = 12;
+            user.UserId = 2;
             user.UserName = "Name " + user.UserId;
             user.WeChatCode = "WeChat " + user.UserId;
             user.Phone = "130-" + user.UserId;
@@ -30,9 +30,15 @@ namespace DbLightTest.MSSQL
             user.RegisterTime = DateTime.Now;
             user.SexId = 2;
 
-            Console.WriteLine(db.Insert(user).ToString());
+            var insert = db.Insert(user)
+                .Ignore(x => new{
+                    x.SexId,
+                    x.Remark
+                });
 
-            await db.Insert(user).ExecuteAsync();
+            Console.WriteLine(insert.ToString());
+
+            await insert.ExecuteAsync();
         }
 
         [Test]
@@ -56,6 +62,31 @@ namespace DbLightTest.MSSQL
             Console.WriteLine(db.Insert(user).ToString());
 
             await db.Insert(user).ExecuteAsync();
+        }
+
+
+        [Test]
+        public async Task InsertFromTable(){
+            var db = new DbContext(QuickStart.BuildConnection());
+
+            var insert = db.Insert<User>()
+                .Include(x => new{
+                    x.UserId,
+                    x.UserName,
+                    x.Height
+                })
+                .From(db.Query<User>()
+                    .Select(x => new{
+                        x.UserId,
+                        x.UserName,
+                        x.Height
+                    })
+                    .Where(x => x.UserId > 10));
+
+            Console.WriteLine(insert.ToString());
+
+            var count = await insert.ExecuteAsync();
+            Console.WriteLine($"Count = {count}");
         }
 
         [Test]
@@ -97,7 +128,6 @@ namespace DbLightTest.MSSQL
             //-----
             Console.WriteLine($"Execute SQL ms = {sw.ElapsedMilliseconds}");
             sw.Stop();
-
         }
     }
 }

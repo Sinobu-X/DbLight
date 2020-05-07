@@ -4,6 +4,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using DbLight.Common;
+using DbLight.Exceptions;
 
 namespace DbLight.Sql
 {
@@ -18,8 +19,10 @@ namespace DbLight.Sql
         private readonly DbContext _context;
         private readonly DbTableModelInfo _from;
         private readonly T _item;
-        private readonly List<DbColumnModelInfo> _ignoreColumns = new List<DbColumnModelInfo>();
+        private readonly List<DbColumnModelInfo> _includeColumns = new List<DbColumnModelInfo>();
+        private readonly List<DbColumnModelInfo> _excludeColumns = new List<DbColumnModelInfo>();
         private bool _closeIdentify;
+        private string _fromSql;
 
         private SqlInsert(){
             ModelInfo = DbModelHelper.GetModelInfo(typeof(T));
@@ -48,11 +51,31 @@ namespace DbLight.Sql
             _item = item;
         }
 
-        public SqlInsert<T> Ignore<T1>(Expression<Func<T, T1>> columns){
-            var ignoreItems = DbExpressionHelper.ReadColumnExpression(columns, ModelInfo);
+        public SqlInsert(DbConnection connection, DbContext context) : this(){
+            Connection = connection;
+            _context = context;
+        }
 
-            foreach (var item in ignoreItems){
-                _ignoreColumns.Add(item);
+        public SqlInsert<T> Include<T1>(Expression<Func<T, T1>> columns){
+            var items = DbExpressionHelper.ReadColumnExpression(columns, ModelInfo);
+
+            foreach (var item in items){
+                _includeColumns.Add(item);
+            }
+
+            return this;
+        }
+
+        [Obsolete("Select is deprecated, please use Exclude instead.")]
+        public SqlInsert<T> Ignore<T1>(Expression<Func<T, T1>> columns){
+            return Exclude(columns);
+        }
+        
+        public SqlInsert<T> Exclude<T1>(Expression<Func<T, T1>> columns){
+            var items = DbExpressionHelper.ReadColumnExpression(columns, ModelInfo);
+
+            foreach (var item in items){
+                _excludeColumns.Add(item);
             }
 
             return this;
@@ -60,6 +83,11 @@ namespace DbLight.Sql
 
         public SqlInsert<T> CloseIdentify(){
             _closeIdentify = true;
+            return this;
+        }
+
+        public SqlInsert<T> From<TX>(SqlQuery<TX> query) where TX : new(){
+            _fromSql = query.ToString();
             return this;
         }
 
@@ -84,25 +112,41 @@ namespace DbLight.Sql
                 members = ModelInfo.Members;
             }
 
-            members = members.FindAll(x => {
-                if (_ignoreColumns.Exists(y => y.Column.Equals(x.ColumnName, StringComparison.OrdinalIgnoreCase))){
-                    return false;
-                }
+            if (_includeColumns.Count > 0){
+                var temps = new List<DbMemberInfo>();
 
-                if (x.NotMapped){
-                    return false;
-                }
+                var members1 = members;
+                _includeColumns.ForEach(x => {
+                    var member = members1.Find(y => y.ColumnName.Equals(x.Column, StringComparison.OrdinalIgnoreCase));
+                    if (member == null){
+                        throw new DbArgumentException($"Column [{x.Column}] not found in the table struct.");
+                    }
+                    temps.Add(member);
+                });
 
-                if (x.Model.Kind != DbModelKind.Value){
-                    return false;
-                }
+                members = temps;
+            }
+            else{
+                members = members.FindAll(x => {
+                    if (_excludeColumns.Exists(y => y.Column.Equals(x.ColumnName, StringComparison.OrdinalIgnoreCase))){
+                        return false;
+                    }
 
-                if (x.Identity && _closeIdentify == false){
-                    return false;
-                }
+                    if (x.NotMapped){
+                        return false;
+                    }
 
-                return true;
-            });
+                    if (x.Model.Kind != DbModelKind.Value){
+                        return false;
+                    }
+
+                    if (x.Identity && _closeIdentify == false){
+                        return false;
+                    }
+
+                    return true;
+                });
+            }
 
             var sql = new StringBuilder();
 
@@ -124,24 +168,29 @@ namespace DbLight.Sql
                     sql.Append(DbSql.GetColumnName(Connection, column.ColumnName));
                 }
             }
-            sql.Append("");
+            sql.Append(") ");
 
-            //COLUMNS END & VALUES BEGIN
-            sql.Append(") VALUES(");
+            if (_fromSql == null){
+                //COLUMNS END & VALUES BEGIN
+                sql.Append("VALUES(");
 
-            //VALUES
-            {
-                var isFirst = true;
-                foreach (var column in members){
-                    sql.Append(isFirst ? "" : ", ");
-                    isFirst = false;
-                    var value = column.PropertyInfo.GetValue(_item);
-                    sql.Append(DbSql.ValueToSetSql(Connection, value));
+                //VALUES
+                {
+                    var isFirst = true;
+                    foreach (var column in members){
+                        sql.Append(isFirst ? "" : ", ");
+                        isFirst = false;
+                        var value = column.PropertyInfo.GetValue(_item);
+                        sql.Append(DbSql.ValueToSetSql(Connection, value));
+                    }
                 }
-            }
 
-            //VALUES END
-            sql.Append(")");
+                //VALUES END
+                sql.Append(")");
+            }
+            else{
+                sql.Append(_fromSql);
+            }
 
             return sql.ToString();
         }

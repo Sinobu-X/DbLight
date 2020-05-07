@@ -52,17 +52,32 @@ namespace DbLight.Sql
             _item = item;
         }
 
+        [Obsolete("Select is deprecated, please use Include instead.")]
         public SqlUpdate<T> Select<T1>(Expression<Func<T, T1>> columns){
+            return Include(columns);
+        }
+
+        [Obsolete("Select is deprecated, please use Include instead.")]
+        public SqlUpdate<T> Select<T1>(string expression, Expression<Func<T, T1>> parameters){
+            return Include(expression, parameters);
+        }
+
+        public SqlUpdate<T> Include<T1>(Expression<Func<T, T1>> columns){
             _includeColumns.AddRange(DbExpressionHelper.ReadColumnExpression(columns, ModelInfo));
             return this;
         }
 
-        public SqlUpdate<T> Select<T1>(string expression, Expression<Func<T, T1>> parameters){
+        public SqlUpdate<T> Include<T1>(string expression, Expression<Func<T, T1>> parameters){
             _expressions.Add(DbExpressionHelper.ReadEditAnyExpression(Connection, ModelInfo, expression, parameters));
             return this;
         }
 
+        [Obsolete("Select is deprecated, please use Exclude instead.")]
         public SqlUpdate<T> Deselect<T1>(Expression<Func<T, T1>> columns){
+            return Exclude(columns);
+        }
+
+        public SqlUpdate<T> Exclude<T1>(Expression<Func<T, T1>> columns){
             _excludeColumns.AddRange(DbExpressionHelper.ReadColumnExpression(columns, ModelInfo));
             return this;
         }
@@ -116,12 +131,14 @@ namespace DbLight.Sql
 
             members = members.FindAll(x => {
                 if (_includeColumns.Count > 0){
-                    if (!_includeColumns.Exists(y => string.Equals(y.Column, x.ColumnName, StringComparison.OrdinalIgnoreCase))){
+                    if (!_includeColumns.Exists(y =>
+                        string.Equals(y.Column, x.ColumnName, StringComparison.OrdinalIgnoreCase))){
                         return false;
                     }
                 }
                 else if (_excludeColumns.Count > 0){
-                    if (_excludeColumns.Exists(y => string.Equals(y.Column, x.ColumnName, StringComparison.OrdinalIgnoreCase))){
+                    if (_excludeColumns.Exists(y =>
+                        string.Equals(y.Column, x.ColumnName, StringComparison.OrdinalIgnoreCase))){
                         return false;
                     }
                 }
