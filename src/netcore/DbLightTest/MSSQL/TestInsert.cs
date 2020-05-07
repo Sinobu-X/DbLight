@@ -69,19 +69,23 @@ namespace DbLightTest.MSSQL
         public async Task InsertFromTable(){
             var db = new DbContext(QuickStart.BuildConnection());
 
+//            INSERT INTO [User]([UserId], [Height], [UserName])
+//            SELECT [a].[UserId] AS [UserId], [a].[UserName] AS [UserName], (N'') AS [UserName]
+//            FROM [User] AS [a] WHERE [a].[UserId] > 100
+
             var insert = db.Insert<User>()
                 .Include(x => new{
                     x.UserId,
-                    x.UserName,
-                    x.Height
+                    x.Height,
+                    x.UserName
                 })
                 .From(db.Query<User>()
                     .Select(x => new{
                         x.UserId,
-                        x.UserName,
-                        x.Height
+                        x.Height,
                     })
-                    .Where(x => x.UserId > 10));
+                    .SelectValue(x => x.UserName, "")
+                    .Where(x => x.UserId > 100));
 
             Console.WriteLine(insert.ToString());
 

@@ -150,6 +150,17 @@ namespace DbLight.Sql
             return this;
         }
 
+        public SqlQuery<T> SelectValue<T1>(Expression<Func<T, T1>> column, T1 value){
+            var items = DbExpressionHelper.ReadColumnExpression(column, ModelInfo);
+            if (items.Count != 1){
+                throw new Exception("Only support one property for value express.");
+            }
+
+            AddColumn(items[0], DbSql.ValueToSetSql(Connection, value));
+            return this;
+        }
+
+
         public SqlQuery<T> Select<T1>(Expression<Func<T, T1>> columns){
             var items = DbExpressionHelper.ReadColumnExpression(columns, ModelInfo);
             foreach (var item in items){
