@@ -130,6 +130,13 @@ namespace DbLight.Sql
             }
 
             members = members.FindAll(x => {
+                //only has expressions
+                if (_expressions.Count > 0){
+                    if (_includeColumns.Count == 0){
+                        return false;
+                    }
+                }
+
                 if (_includeColumns.Count > 0){
                     if (!_includeColumns.Exists(y =>
                         string.Equals(y.Column, x.ColumnName, StringComparison.OrdinalIgnoreCase))){

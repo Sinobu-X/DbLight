@@ -31,7 +31,7 @@ namespace DbLightTest.MSSQL
             user.SexId = 2;
 
             var upd = db.Update(user)
-                .Deselect(x => x.Photo)
+                .Exclude(x => x.Photo)
                 .Where(x => x.UserId == 12);
 
             Console.WriteLine(upd.ToString());
@@ -87,7 +87,7 @@ namespace DbLightTest.MSSQL
             user.SexId = 2;
 
             var del = db.Update(user)
-                .Deselect(x => new{
+                .Exclude(x => new{
                     x.UserId,
                     x.Photo
                 })
@@ -109,12 +109,12 @@ namespace DbLightTest.MSSQL
             user.SexId = 2;
 
             var del = db.Update(user)
-                .Select(x => new {
+                .Include(x => new {
                     x.UserName,
                     x.Height,
                     x.SexId
                 })
-                .Select("{0} = {0} + 100.00", x => x.Income)
+                .Include("{0} = {0} + 100.00", x => x.Income)
                 .Where(x => x.UserId == 12);
 
             Console.WriteLine(del.ToString());
