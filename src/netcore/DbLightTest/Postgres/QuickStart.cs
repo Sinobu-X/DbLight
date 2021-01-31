@@ -13,7 +13,7 @@ namespace DbLightTest.Postgres
     {
         public static DbConnection BuildConnection(){
             return new DbConnection(DbDatabaseType.Postgres,
-                "Host=127.0.0.1;Username=test;Password=test;Database=dblight");
+                "Host=127.0.0.1;Port=5432;Username=test;Password=test;Database=dblight");
         }
 
         [Test]

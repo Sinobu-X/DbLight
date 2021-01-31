@@ -5,3 +5,4 @@ release/
 bin/
 obj/
 *.nupkg
+/DbLight.sln.DotSettings.user

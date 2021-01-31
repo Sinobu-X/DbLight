@@ -1,6 +1,9 @@
-create database dblight Encoding = 'UTF8';
 create user test with encrypted password 'test';
+create database dblight owner test Encoding = 'UTF8';
 grant all privileges on database dblight to test;
+-- change database to dblight
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO test;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO test;
 
 create table role
 (
@@ -12,8 +15,7 @@ create table role
 
 -- alter table role owner to test;
 
-create unique index role_role_name_uindex
-	on role (role_name);
+create unique index role_role_name_uindex on role (role_name);
 
 create table sex
 (
@@ -25,8 +27,7 @@ create table sex
 
 -- alter table sex owner to test;
 
-create unique index sex_sex_name_uindex
-	on sex (sex_name);
+create unique index sex_sex_name_uindex on sex (sex_name);
 
 create table role_user
 (
@@ -38,8 +39,7 @@ create table role_user
 
 -- alter table role_user owner to test;
 
-create table "user"
-(
+create table "user" (
 	user_id integer not null
 		constraint user_pk
 			primary key,
@@ -58,9 +58,7 @@ create table "user"
 
 -- alter table "user" owner to test;
 
-create unique index user_phone_uindex
-	on "user" (phone);
+create unique index user_phone_uindex on "user" (phone asc);
 
-create unique index user_we_chat_code_uindex
-	on "user" (we_chat_code);
+create unique index user_we_chat_code_uindex on "user" (we_chat_code asc);
 

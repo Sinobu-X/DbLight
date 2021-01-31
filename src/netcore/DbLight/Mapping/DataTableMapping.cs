@@ -13,28 +13,28 @@ namespace DbLight.Mapping
         private readonly Func<T1, T2> _converter;
         private readonly List<T2> _results;
 
-        public DataTableMapping(DataColumnCollection columns, Func<T1, T2> converter){
+        public DataTableMapping(DataColumnCollection columns, Func<T1, T2> converter) {
             _model = DbModelHelper.GetModelInfo(typeof(T1));
 
-            if (_model.Kind == DbModelKind.Object || _model.Kind == DbModelKind.Tuple){
+            if (_model.Kind == DbModelKind.Object ||  _model.Kind == DbModelKind.Tuple) {
                 //ok
             }
-            else{
+            else {
                 throw new Exception("The receiver data type muse be an object or tuple.");
             }
 
             _columns = new List<(string TableName, string ColumnName, Type dataType)>();
-            for (var i = 0; i < columns.Count; i++){
+            for (var i = 0; i < columns.Count; i++) {
                 var column = columns[i];
 
                 string tableName;
                 string columnName;
                 var pos = column.ColumnName.IndexOf(".", StringComparison.Ordinal);
-                if (pos >= 0){
+                if (pos >= 0) {
                     tableName = column.ColumnName.Substring(0, pos);
                     columnName = column.ColumnName.Substring(pos + 1);
                 }
-                else{
+                else {
                     tableName = "";
                     columnName = column.ColumnName;
                 }
@@ -46,25 +46,25 @@ namespace DbLight.Mapping
             _results = new List<T2>();
         }
 
-        public void AddRow(object[] values){
-            if (_model.Kind == DbModelKind.Object){
+        public void AddRow(object[] values) {
+            if (_model.Kind == DbModelKind.Object) {
                 AddRowForObject(values);
             }
-            else if (_model.Kind == DbModelKind.Tuple){
+            else if (_model.Kind == DbModelKind.Tuple) {
                 AddRowForTuple(values);
             }
         }
 
-        private void AddRowForObject(object[] values){
+        private void AddRowForObject(object[] values) {
             var item = new T1();
 
-            for (var i = 0; i < values.Length; i++){
-                if (i >= _columns.Count){
+            for (var i = 0; i < values.Length; i++) {
+                if (i >= _columns.Count) {
                     continue;
                 }
 
                 var value = values[i];
-                if (value is DBNull){
+                if (value is DBNull) {
                     continue;
                 }
 
@@ -72,50 +72,50 @@ namespace DbLight.Mapping
 
                 var objectItemIndex = _model.Members.FindIndex(x =>
                     x.ColumnName.Equals(column.TableName, StringComparison.OrdinalIgnoreCase));
-                if (objectItemIndex < 0){
-                    //is main object
+                if (objectItemIndex < 0) {
+                    //is a value of the main object
                     var p = _model.Members.Find(x =>
                         x.ColumnName.Equals(column.ColumnName, StringComparison.OrdinalIgnoreCase));
-                    if (p == null){
+                    if (p == null) {
                         continue;
                     }
 
-                    if (p.NotMapped){
+                    if (p.NotMapped) {
                         continue;
                     }
 
-                    if (p.Model.Kind != DbModelKind.Value){
+                    if (p.Model.Kind != DbModelKind.Value) {
                         continue;
                     }
 
                     SetPropertyValue(p.PropertyInfo, item, value);
                 }
-                else{
+                else {
                     var objectItemInfo = _model.Members[objectItemIndex];
-                    if (objectItemInfo.Model.Kind != DbModelKind.Object){
+                    if (objectItemInfo.Model.Kind != DbModelKind.Object) {
                         continue;
                     }
 
                     var p = objectItemInfo.Model.Members.Find(x =>
                         x.ColumnName.Equals(column.ColumnName, StringComparison.OrdinalIgnoreCase));
-                    if (p == null){
+                    if (p == null) {
                         continue;
                     }
 
-                    if (p.NotMapped){
+                    if (p.NotMapped) {
                         continue;
                     }
 
-                    if (p.Model.Kind != DbModelKind.Value){
+                    if (p.Model.Kind != DbModelKind.Value) {
                         continue;
                     }
 
-                    if (objectItemInfo.MemberType != DbMemberType.Property){
+                    if (objectItemInfo.MemberType != DbMemberType.Property) {
                         continue;
                     }
 
                     var objectItemValue = objectItemInfo.PropertyInfo.GetValue(item);
-                    if (objectItemValue == null){
+                    if (objectItemValue == null) {
                         continue;
                     }
 
@@ -125,74 +125,86 @@ namespace DbLight.Mapping
 
             _results.Add(_converter(item));
         }
-
-
-        private void AddRowForTuple(object[] values){
+        
+        private void AddRowForTuple(object[] values) {
             var tupleObj = Activator.CreateInstance(_model.Type);
             var tupleItems = new object[_model.Members.Count];
-            for (var i = 0; i < _model.Members.Count; i++){
+            for (var i = 0; i < _model.Members.Count; i++) {
                 var member = _model.Members[i];
                 var item = Activator.CreateInstance(member.Model.Type);
                 tupleItems[i] = item;
                 member.FieldInfo.SetValue(tupleObj, item);
             }
 
-            for (var i = 0; i < values.Length; i++){
-                if (i >= _columns.Count){
+            for (var i = 0; i < values.Length; i++) {
+                if (i >= _columns.Count) {
                     continue;
                 }
 
                 var value = values[i];
-                if (value is DBNull){
+                if (value is DBNull) {
                     continue;
                 }
 
                 var column = _columns[i];
-                var tupleItemIndex = _model.Members.FindIndex(x =>
-                    x.ColumnName.Equals(column.TableName, StringComparison.OrdinalIgnoreCase));
-                if (tupleItemIndex < 0){
-                    continue;
-                }
+                var tupleItemIndex = -1;
+                if (!string.IsNullOrEmpty(column.TableName)) {
+                    tupleItemIndex = _model.Members.FindIndex(x =>
+                        x.ColumnName.Equals(column.TableName, StringComparison.OrdinalIgnoreCase));
 
-                var tupleItemInfo = _model.Members[tupleItemIndex];
-                if (tupleItemInfo.Model.Kind == DbModelKind.Object){
-                    var p = tupleItemInfo.Model.Members.Find(x =>
+                    if (tupleItemIndex >= 0) {
+                        var tupleItemInfo = _model.Members[tupleItemIndex];
+                        if (tupleItemInfo.Model.Kind == DbModelKind.Object) {
+                            var p = tupleItemInfo.Model.Members.Find(x =>
+                                x.ColumnName.Equals(column.ColumnName, StringComparison.OrdinalIgnoreCase));
+                            if (p == null) {
+                                continue;
+                            }
+
+                            if (p.NotMapped) {
+                                continue;
+                            }
+
+                            if (p.Model.Kind != DbModelKind.Value) {
+                                continue;
+                            }
+
+                            SetPropertyValue(p.PropertyInfo, tupleItems[tupleItemIndex], value);
+                        }
+                        else if (tupleItemInfo.Model.Kind == DbModelKind.Tuple) {
+                            var p = tupleItemInfo.Model.Members.Find(x =>
+                                x.ColumnName.Equals(column.ColumnName, StringComparison.OrdinalIgnoreCase));
+                            if (p == null) {
+                                continue;
+                            }
+
+                            if (p.Model.Kind != DbModelKind.Value) {
+                                continue;
+                            }
+
+                            SetFieldValue(p.FieldInfo, tupleItems[tupleItemIndex], value);
+                        }
+                        else {
+                            //nothing
+                        }
+                    }
+                }
+                else {
+                    tupleItemIndex = _model.Members.FindIndex(x =>
                         x.ColumnName.Equals(column.ColumnName, StringComparison.OrdinalIgnoreCase));
-                    if (p == null){
-                        continue;
-                    }
 
-                    if (p.NotMapped){
-                        continue;
+                    if (tupleItemIndex >= 0) {
+                        var tupleItemInfo = _model.Members[tupleItemIndex];
+                        if (tupleItemInfo.Model.Kind == DbModelKind.Value) {
+                            SetFieldValue(tupleItemInfo.FieldInfo, tupleObj, value);
+                        }
                     }
-
-                    if (p.Model.Kind != DbModelKind.Value){
-                        continue;
-                    }
-
-                    SetPropertyValue(p.PropertyInfo, tupleItems[tupleItemIndex], value);
-                }
-                else if (tupleItemInfo.Model.Kind == DbModelKind.Tuple){
-                    var p = tupleItemInfo.Model.Members.Find(x =>
-                        x.ColumnName.Equals(column.ColumnName, StringComparison.OrdinalIgnoreCase));
-                    if (p == null){
-                        continue;
-                    }
-
-                    if (p.Model.Kind != DbModelKind.Value){
-                        continue;
-                    }
-
-                    SetFieldValue(p.FieldInfo, tupleItems[tupleItemIndex], value);
-                }
-                else if (tupleItemInfo.Model.Kind == DbModelKind.Value){
-                    SetFieldValue(tupleItemInfo.FieldInfo, tupleObj, value);
                 }
             }
 
-            for (var i = 0; i < _model.Members.Count; i++){
+            for (var i = 0; i < _model.Members.Count; i++) {
                 var tupleItemInfo = _model.Members[i];
-                if (tupleItemInfo.Model.Kind == DbModelKind.Tuple){
+                if (tupleItemInfo.Model.Kind == DbModelKind.Tuple) {
                     tupleItemInfo.FieldInfo.SetValue(tupleObj, tupleItems[i]);
                 }
             }
@@ -200,16 +212,16 @@ namespace DbLight.Mapping
             _results.Add(_converter((T1) tupleObj));
         }
 
-        private void SetPropertyValue(PropertyInfo p, object obj, object value){
-            if (p.PropertyType == typeof(decimal)){
+        private void SetPropertyValue(PropertyInfo p, object obj, object value) {
+            if (p.PropertyType == typeof(decimal)) {
                 p.SetValue(obj, Convert.ToDecimal(value));
                 return;
             }
-            else if (p.PropertyType == typeof(double)){
+            else if (p.PropertyType == typeof(double)) {
                 p.SetValue(obj, Convert.ToDouble(value));
                 return;
             }
-            else if (p.PropertyType == typeof(int)){
+            else if (p.PropertyType == typeof(int)) {
                 p.SetValue(obj, Convert.ToInt32(value));
                 return;
             }
@@ -217,16 +229,16 @@ namespace DbLight.Mapping
             p.SetValue(obj, value);
         }
 
-        private void SetFieldValue(FieldInfo p, object obj, object value){
-            if (p.FieldType == typeof(decimal)){
+        private void SetFieldValue(FieldInfo p, object obj, object value) {
+            if (p.FieldType == typeof(decimal)) {
                 p.SetValue(obj, Convert.ToDecimal(value));
                 return;
             }
-            else if (p.FieldType == typeof(double)){
+            else if (p.FieldType == typeof(double)) {
                 p.SetValue(obj, Convert.ToDouble(value));
                 return;
             }
-            else if (p.FieldType == typeof(int)){
+            else if (p.FieldType == typeof(int)) {
                 p.SetValue(obj, Convert.ToInt32(value));
                 return;
             }
@@ -235,7 +247,7 @@ namespace DbLight.Mapping
         }
 
 
-        public List<T2> ToList(){
+        public List<T2> ToList() {
             return _results;
         }
     }
