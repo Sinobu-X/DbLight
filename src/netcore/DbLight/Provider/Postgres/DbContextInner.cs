@@ -10,72 +10,60 @@ namespace DbLight.Provider.Postgres
 {
     internal class DbContextInner : IDbContextInner
     {
-        public DbConnection Connection{ get; }
+        public DbConnection Connection { get; }
 
         private NpgsqlConnection _cn;
         private NpgsqlTransaction _trans;
 
-        public DbContextInner(DbConnection connection){
+        public DbContextInner(DbConnection connection) {
             Connection = connection;
         }
 
-        public void Dispose(){
-            try{
+        public void Dispose() {
+            try {
                 _trans?.Dispose();
             }
-            catch (Exception ex){
+            catch (Exception ex) {
                 Connection.Warn("Dispose Transaction Failed.", ex);
             }
-            finally{
+            finally {
                 _trans = null;
             }
 
-            try{
+            try {
                 _cn?.Dispose();
             }
-            catch (Exception ex){
+            catch (Exception ex) {
                 Connection.Warn("Dispose Connection Failed.", ex);
             }
-            finally{
+            finally {
                 _cn = null;
             }
         }
 
-        private string BuildConnectingString(bool isTest){
-            if (Connection.ConnectionString != null){
-                if (isTest && Connection.TestConnectionString != null){
+        private string BuildConnectingString(bool isTest) {
+            if (Connection.ConnectionString != null) {
+                if (isTest && Connection.TestConnectionString != null) {
                     return Connection.TestConnectionString;
                 }
-                else{
+                else {
                     return Connection.ConnectionString;
                 }
             }
 
-            if (isTest){
-                return string.Format("Host={0};Username={1};Password={2};Database={3};Connect Timeout=5",
-                    Connection.Postgres.Host,
-                    Connection.Postgres.User,
-                    Connection.Postgres.Password,
-                    Connection.Postgres.Database);
-            }
-            else{
-                return string.Format("Host={0};Username={1};Password={2};Database={3};Connect Timeout=900",
-                    Connection.Postgres.Host,
-                    Connection.Postgres.User,
-                    Connection.Postgres.Password,
-                    Connection.Postgres.Database);
-            }
+            return
+                $"Host={Connection.Postgres.Host};Port={Connection.Postgres.Port};Username={Connection.Postgres.User};Password={Connection.Postgres.Password};Database={Connection.Postgres.Database};Timeout={Connection.Postgres.ConnectionTimeout};CommandTimeout={Connection.Postgres.CommandTimeout}";
         }
 
-        public void BeginTransaction(){
-            if (Connection.TestConnection){
-                using (var cn = new NpgsqlConnection(BuildConnectingString(true))){
+        public void BeginTransaction() {
+            if (Connection.TestConnection) {
+                using (var cn = new NpgsqlConnection(BuildConnectingString(true))) {
                     cn.Open();
                 }
             }
 
             var success = false;
-            try{
+            try {
                 _cn = new NpgsqlConnection(BuildConnectingString(false));
                 _cn.Open();
 
@@ -83,44 +71,44 @@ namespace DbLight.Provider.Postgres
 
                 success = true;
             }
-            catch (Exception ex){
+            catch (Exception ex) {
                 Connection.Warn("Begin Transaction Failed", ex);
                 throw;
             }
-            finally{
-                if (!success){
-                    try{
-                        if (_trans != null){
+            finally {
+                if (!success) {
+                    try {
+                        if (_trans != null) {
                             _trans.Dispose();
                             _trans = null;
                         }
                     }
-                    catch (Exception ex){
+                    catch (Exception ex) {
                         Connection.Warn("Dispose Transaction Failed.", ex);
                     }
 
-                    try{
-                        if (_cn != null){
+                    try {
+                        if (_cn != null) {
                             _cn.Dispose();
                             _cn = null;
                         }
                     }
-                    catch (Exception ex){
+                    catch (Exception ex) {
                         Connection.Warn("Dispose Connection Failed.", ex);
                     }
                 }
             }
         }
 
-        public async Task BeginTransactionAsync(){
-            if (Connection.TestConnection){
-                using (var cn = new NpgsqlConnection(BuildConnectingString(true))){
+        public async Task BeginTransactionAsync() {
+            if (Connection.TestConnection) {
+                using (var cn = new NpgsqlConnection(BuildConnectingString(true))) {
                     await cn.OpenAsync();
                 }
             }
 
             var success = false;
-            try{
+            try {
                 _cn = new NpgsqlConnection(BuildConnectingString(false));
                 await _cn.OpenAsync();
 
@@ -128,36 +116,36 @@ namespace DbLight.Provider.Postgres
 
                 success = true;
             }
-            catch (Exception ex){
+            catch (Exception ex) {
                 Connection.Warn("Begin Transaction Failed", ex);
                 throw;
             }
-            finally{
-                if (!success){
-                    try{
-                        if (_trans != null){
+            finally {
+                if (!success) {
+                    try {
+                        if (_trans != null) {
                             _trans.Dispose();
                             _trans = null;
                         }
                     }
-                    catch (Exception ex){
+                    catch (Exception ex) {
                         Connection.Warn("Dispose Transaction Failed.", ex);
                     }
 
-                    try{
-                        if (_cn != null){
+                    try {
+                        if (_cn != null) {
                             _cn.Dispose();
                             _cn = null;
                         }
                     }
-                    catch (Exception ex){
+                    catch (Exception ex) {
                         Connection.Warn("Dispose Connection Failed.", ex);
                     }
                 }
             }
         }
 
-        public void Commit(){
+        public void Commit() {
             _trans.Commit();
             _trans.Dispose();
             _trans = null;
@@ -166,7 +154,7 @@ namespace DbLight.Provider.Postgres
             _cn = null;
         }
 
-        public void Rollback(){
+        public void Rollback() {
             _trans.Rollback();
             _trans.Dispose();
             _trans = null;
@@ -177,63 +165,63 @@ namespace DbLight.Provider.Postgres
 
         public bool TransactionOpened => (_trans != null);
 
-        public DataTable ExecQueryToDataTable(string sql, int maxRecords){
-            try{
+        public DataTable ExecQueryToDataTable(string sql, int maxRecords) {
+            try {
                 DataTable dt;
 
-                if (_cn == null){
-                    if (Connection.TestConnection){
-                        using (var cn = new NpgsqlConnection()){
+                if (_cn == null) {
+                    if (Connection.TestConnection) {
+                        using (var cn = new NpgsqlConnection()) {
                             cn.ConnectionString = BuildConnectingString(true);
                             cn.Open();
                         }
                     }
 
-                    using (var cn = new NpgsqlConnection()){
+                    using (var cn = new NpgsqlConnection()) {
                         cn.ConnectionString = BuildConnectingString(false);
                         cn.Open();
 
                         dt = ExecQueryToDataTable_ExecuteReader(cn, null, sql, maxRecords);
                     }
                 }
-                else{
+                else {
                     dt = ExecQueryToDataTable_ExecuteReader(_cn, _trans, sql, maxRecords);
                 }
 
                 Connection.Info(sql);
                 return dt;
             }
-            catch (Exception ex){
+            catch (Exception ex) {
                 Connection.Error(sql, ex);
                 throw;
             }
         }
 
         private DataTable ExecQueryToDataTable_ExecuteReader(NpgsqlConnection cn,
-            NpgsqlTransaction transaction, string sql, int maxRecords){
+            NpgsqlTransaction transaction, string sql, int maxRecords) {
             var dt = new DataTable();
-            using (var cmd = new NpgsqlCommand()){
+            using (var cmd = new NpgsqlCommand()) {
                 cmd.Connection = cn;
                 cmd.CommandTimeout = 0;
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = sql;
 
-                using (var dr = cmd.ExecuteReader(CommandBehavior.SequentialAccess)){
+                using (var dr = cmd.ExecuteReader(CommandBehavior.SequentialAccess)) {
                     dt.BeginLoadData();
 
-                    for (var i = 0; i < dr.FieldCount; i++){
+                    for (var i = 0; i < dr.FieldCount; i++) {
                         dt.Columns.Add(dr.GetName(i), dr.GetFieldType(i));
                     }
 
                     var rowCount = 0;
-                    while (dr.Read()){
+                    while (dr.Read()) {
                         var items = new object[dr.FieldCount];
                         dr.GetValues(items);
                         dt.LoadDataRow(items, true);
 
                         rowCount++;
-                        if (maxRecords > 0 && rowCount == maxRecords){
+                        if (maxRecords > 0 && rowCount == maxRecords) {
                             break;
                         }
                     }
@@ -245,26 +233,26 @@ namespace DbLight.Provider.Postgres
             return dt;
         }
 
-        public async Task<DataTable> ExecQueryToDataTableAsync(string sql, int maxRecords){
-            try{
+        public async Task<DataTable> ExecQueryToDataTableAsync(string sql, int maxRecords) {
+            try {
                 DataTable dt;
 
-                if (_cn == null){
-                    if (Connection.TestConnection){
-                        using (var cn = new NpgsqlConnection()){
+                if (_cn == null) {
+                    if (Connection.TestConnection) {
+                        using (var cn = new NpgsqlConnection()) {
                             cn.ConnectionString = BuildConnectingString(true);
                             await cn.OpenAsync();
                         }
                     }
 
-                    using (var cn = new NpgsqlConnection()){
+                    using (var cn = new NpgsqlConnection()) {
                         cn.ConnectionString = BuildConnectingString(false);
                         await cn.OpenAsync();
                         dt = await ExecQueryToDataTable_ExecuteReaderAsync(cn,
                             null, sql, maxRecords);
                     }
                 }
-                else{
+                else {
                     dt = await ExecQueryToDataTable_ExecuteReaderAsync(_cn,
                         _trans, sql, maxRecords);
                 }
@@ -272,38 +260,38 @@ namespace DbLight.Provider.Postgres
                 Connection.Info(sql);
                 return dt;
             }
-            catch (Exception ex){
+            catch (Exception ex) {
                 Connection.Error(sql, ex);
                 throw;
             }
         }
 
         private async Task<DataTable> ExecQueryToDataTable_ExecuteReaderAsync(NpgsqlConnection cn,
-            NpgsqlTransaction transaction, string sql, int maxRecords){
+            NpgsqlTransaction transaction, string sql, int maxRecords) {
             var dt = new DataTable();
 
-            using (var cmd = new NpgsqlCommand()){
+            using (var cmd = new NpgsqlCommand()) {
                 cmd.Connection = cn;
                 cmd.CommandTimeout = 0;
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = sql;
 
-                using (var dr = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess)){
+                using (var dr = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess)) {
                     dt.BeginLoadData();
 
-                    for (var i = 0; i < dr.FieldCount; i++){
+                    for (var i = 0; i < dr.FieldCount; i++) {
                         dt.Columns.Add(dr.GetName(i), dr.GetFieldType(i));
                     }
 
                     var rowCount = 0;
-                    while (await dr.ReadAsync()){
+                    while (await dr.ReadAsync()) {
                         var items = new object[dr.FieldCount];
                         dr.GetValues(items);
                         dt.LoadDataRow(items, true);
 
                         rowCount++;
-                        if (maxRecords > 0 && rowCount == maxRecords){
+                        if (maxRecords > 0 && rowCount == maxRecords) {
                             break;
                         }
                     }
@@ -316,19 +304,19 @@ namespace DbLight.Provider.Postgres
         }
 
         public async Task<List<TResult>> ExecQueryToListAsync<T, TResult>(string sql, int maxRecords,
-            Func<T, TResult> converter) where T : new(){
-            try{
+            Func<T, TResult> converter) where T : new() {
+            try {
                 List<TResult> list;
 
-                if (_cn == null){
-                    if (Connection.TestConnection){
-                        using (var cn = new NpgsqlConnection()){
+                if (_cn == null) {
+                    if (Connection.TestConnection) {
+                        using (var cn = new NpgsqlConnection()) {
                             cn.ConnectionString = BuildConnectingString(true);
                             await cn.OpenAsync();
                         }
                     }
 
-                    using (var cn = new NpgsqlConnection()){
+                    using (var cn = new NpgsqlConnection()) {
                         cn.ConnectionString = BuildConnectingString(false);
                         await cn.OpenAsync();
 
@@ -336,7 +324,7 @@ namespace DbLight.Provider.Postgres
                             cn, null, sql, maxRecords, converter);
                     }
                 }
-                else{
+                else {
                     list = await ExecQueryToListAsync_ExecuteReaderAsync(
                         _cn, _trans, sql, maxRecords, converter);
                 }
@@ -344,7 +332,7 @@ namespace DbLight.Provider.Postgres
                 Connection.Info(sql);
                 return list;
             }
-            catch (Exception ex){
+            catch (Exception ex) {
                 Connection.Error(sql, ex);
                 throw;
             }
@@ -352,33 +340,33 @@ namespace DbLight.Provider.Postgres
 
         private async Task<List<TResult>> ExecQueryToListAsync_ExecuteReaderAsync<T, TResult>(
             NpgsqlConnection cn, NpgsqlTransaction transaction, string sql, int maxRecords,
-            Func<T, TResult> converter) where T : new(){
+            Func<T, TResult> converter) where T : new() {
             List<TResult> list;
 
-            using (var cmd = new NpgsqlCommand()){
+            using (var cmd = new NpgsqlCommand()) {
                 cmd.Connection = cn;
                 cmd.CommandTimeout = 0;
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = sql;
 
-                using (var dr = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess)){
+                using (var dr = await cmd.ExecuteReaderAsync(CommandBehavior.SequentialAccess)) {
                     var dt = new DataTable();
-                    for (var i = 0; i < dr.FieldCount; i++){
+                    for (var i = 0; i < dr.FieldCount; i++) {
                         dt.Columns.Add(dr.GetName(i), dr.GetFieldType(i));
                     }
 
                     var mapping = new DataTableMapping<T, TResult>(dt.Columns, converter);
 
                     var rowCount = 0;
-                    while (await dr.ReadAsync()){
+                    while (await dr.ReadAsync()) {
                         var values = new object[dr.FieldCount];
                         dr.GetValues(values);
 
                         mapping.AddRow(values);
 
                         rowCount++;
-                        if (maxRecords > 0 && rowCount == maxRecords){
+                        if (maxRecords > 0 && rowCount == maxRecords) {
                             break;
                         }
                     }
@@ -391,26 +379,26 @@ namespace DbLight.Provider.Postgres
         }
 
         public List<TResult> ExecQueryToList<T, TResult>(string sql, int maxRecords,
-            Func<T, TResult> converter) where T : new(){
-            try{
+            Func<T, TResult> converter) where T : new() {
+            try {
                 List<TResult> list;
 
-                if (_cn == null){
-                    if (Connection.TestConnection){
-                        using (var cn = new NpgsqlConnection()){
+                if (_cn == null) {
+                    if (Connection.TestConnection) {
+                        using (var cn = new NpgsqlConnection()) {
                             cn.ConnectionString = BuildConnectingString(true);
                             cn.Open();
                         }
                     }
 
-                    using (var cn = new NpgsqlConnection()){
+                    using (var cn = new NpgsqlConnection()) {
                         cn.ConnectionString = BuildConnectingString(false);
                         cn.Open();
 
                         list = ExecQueryToList_ExecuteReader(cn, null, sql, maxRecords, converter);
                     }
                 }
-                else{
+                else {
                     list = ExecQueryToList_ExecuteReader(_cn, _trans, sql, maxRecords,
                         converter);
                 }
@@ -418,7 +406,7 @@ namespace DbLight.Provider.Postgres
                 Connection.Info(sql);
                 return list;
             }
-            catch (Exception ex){
+            catch (Exception ex) {
                 Connection.Error(sql, ex);
                 throw;
             }
@@ -426,33 +414,33 @@ namespace DbLight.Provider.Postgres
 
         private List<TResult> ExecQueryToList_ExecuteReader<T, TResult>(
             NpgsqlConnection cn, NpgsqlTransaction transaction,
-            string sql, int maxRecords, Func<T, TResult> converter) where T : new(){
+            string sql, int maxRecords, Func<T, TResult> converter) where T : new() {
             List<TResult> list;
 
-            using (var cmd = new NpgsqlCommand()){
+            using (var cmd = new NpgsqlCommand()) {
                 cmd.Connection = cn;
                 cmd.CommandTimeout = 0;
                 cmd.Transaction = transaction;
                 cmd.CommandType = CommandType.Text;
                 cmd.CommandText = sql;
 
-                using (var dr = cmd.ExecuteReader(CommandBehavior.SequentialAccess)){
+                using (var dr = cmd.ExecuteReader(CommandBehavior.SequentialAccess)) {
                     var dt = new DataTable();
-                    for (var i = 0; i < dr.FieldCount; i++){
+                    for (var i = 0; i < dr.FieldCount; i++) {
                         dt.Columns.Add(dr.GetName(i), dr.GetFieldType(i));
                     }
 
                     var mapping = new DataTableMapping<T, TResult>(dt.Columns, converter);
 
                     var rowCount = 0;
-                    while (dr.Read()){
+                    while (dr.Read()) {
                         var values = new object[dr.FieldCount];
                         dr.GetValues(values);
 
                         mapping.AddRow(values);
 
                         rowCount++;
-                        if (maxRecords > 0 && rowCount == maxRecords){
+                        if (maxRecords > 0 && rowCount == maxRecords) {
                             break;
                         }
                     }
@@ -464,23 +452,23 @@ namespace DbLight.Provider.Postgres
             return list;
         }
 
-        public async Task<int> ExecNoQueryAsync(string sql){
-            try{
+        public async Task<int> ExecNoQueryAsync(string sql) {
+            try {
                 int cnt;
 
-                if (_cn == null){
-                    if (Connection.TestConnection){
-                        using (var cn = new NpgsqlConnection()){
+                if (_cn == null) {
+                    if (Connection.TestConnection) {
+                        using (var cn = new NpgsqlConnection()) {
                             cn.ConnectionString = BuildConnectingString(true);
                             await cn.OpenAsync();
                         }
                     }
 
-                    using (var cn = new NpgsqlConnection()){
+                    using (var cn = new NpgsqlConnection()) {
                         cn.ConnectionString = BuildConnectingString(false);
                         await cn.OpenAsync();
 
-                        using (var cmd = new NpgsqlCommand()){
+                        using (var cmd = new NpgsqlCommand()) {
                             cmd.Connection = cn;
                             cmd.CommandTimeout = 0;
                             //cmd.Transaction = _trans;
@@ -491,8 +479,8 @@ namespace DbLight.Provider.Postgres
                         }
                     }
                 }
-                else{
-                    using (var cmd = new NpgsqlCommand()){
+                else {
+                    using (var cmd = new NpgsqlCommand()) {
                         cmd.Connection = _cn;
                         cmd.CommandTimeout = 0;
                         cmd.Transaction = _trans;
@@ -506,29 +494,29 @@ namespace DbLight.Provider.Postgres
                 Connection.Info(sql);
                 return cnt;
             }
-            catch (Exception ex){
+            catch (Exception ex) {
                 Connection.Error(sql, ex);
                 throw;
             }
         }
 
-        public int ExecNoQuery(string sql){
-            try{
+        public int ExecNoQuery(string sql) {
+            try {
                 int cnt;
 
-                if (_cn == null){
-                    if (Connection.TestConnection){
-                        using (var cn = new NpgsqlConnection()){
+                if (_cn == null) {
+                    if (Connection.TestConnection) {
+                        using (var cn = new NpgsqlConnection()) {
                             cn.ConnectionString = BuildConnectingString(true);
                             cn.Open();
                         }
                     }
 
-                    using (var cn = new NpgsqlConnection()){
+                    using (var cn = new NpgsqlConnection()) {
                         cn.ConnectionString = BuildConnectingString(false);
                         cn.Open();
 
-                        using (var cmd = new NpgsqlCommand()){
+                        using (var cmd = new NpgsqlCommand()) {
                             cmd.Connection = cn;
                             cmd.CommandTimeout = 0;
                             //cmd.Transaction = _trans;
@@ -539,8 +527,8 @@ namespace DbLight.Provider.Postgres
                         }
                     }
                 }
-                else{
-                    using (var cmd = new NpgsqlCommand()){
+                else {
+                    using (var cmd = new NpgsqlCommand()) {
                         cmd.Connection = _cn;
                         cmd.CommandTimeout = 0;
                         cmd.Transaction = _trans;
@@ -554,7 +542,7 @@ namespace DbLight.Provider.Postgres
                 Connection.Info(sql);
                 return cnt;
             }
-            catch (Exception ex){
+            catch (Exception ex) {
                 Connection.Error(sql, ex);
                 throw;
             }

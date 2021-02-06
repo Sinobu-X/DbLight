@@ -58,9 +58,12 @@ namespace DbLight.Common
         public class PostgresInfo
         {
             public string Host{ get; set; } = "";
+            public int Port { get; set; } = 5432;
             public string User{ get; set; } = "";
             public string Password{ get; set; } = "";
             public string Database{ get; set; } = "";
+            public int ConnectionTimeout { get; set; } = 15;
+            public int CommandTimeout { get; set; } = 120;
         }
 
         public void Info(string message){

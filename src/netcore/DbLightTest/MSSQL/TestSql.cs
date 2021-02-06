@@ -9,7 +9,7 @@ using DbLight.Sql;
 using Newtonsoft.Json;
 using NUnit.Framework;
 
-namespace DbLightTest.Postgres
+namespace DbLightTest.MSSQL
 {
     public class TestSql
     {
@@ -33,7 +33,7 @@ namespace DbLightTest.Postgres
                 .ToString());
             batchSqlList.Add(db.Delete<User>()
                 .WhereBegin()
-                .Compare(x => x.UserId, SqlCompareType.Equal, 13)
+                .Compare(x => x.UserId, SqlCompareType.Equal, 12)
                 .WhereEnded()
                 .ToString());
             

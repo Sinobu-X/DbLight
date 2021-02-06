@@ -104,6 +104,9 @@ namespace DbLight
                 foreach (var sql in batchSql){
                     contentLength += sql.Length;
                     sb.Append(sql);
+                    if (!sql.EndsWith(";")) {
+                        sb.Append(";");
+                    }
 
                     if (contentLength > 8000){
                         await ExecNoQueryAsync(sb.ToString());

@@ -12,10 +12,30 @@ namespace DbLightTest.Postgres
     public class QuickStart
     {
         public static DbConnection BuildConnection(){
+            //Host=127.0.0.1;Username=cqa_sa;Password=cqa_sa;Database=cqa;Connect Timeout=900
             return new DbConnection(DbDatabaseType.Postgres,
-                "Host=127.0.0.1;Port=5432;Username=test;Password=test;Database=dblight");
+                "Host=127.0.0.1;Username=test;Password=test;Database=dblight");
         }
 
+        [Test]
+        public void TestConnection() {
+            var cn = new DbConnection(DbDatabaseType.Postgres) {
+                Postgres = new DbConnection.PostgresInfo() {
+                    Host = "127.0.0.1",
+                    User = "test",
+                    Password = "test",
+                    Database = "dblight"
+                },
+            };
+
+            var db = new DbContext(cn);
+            var users = db.Query<User>()
+                .Where(x => x.UserId >= 1 && x.UserId < 10)
+                .ToList();
+
+            Console.WriteLine(JsonConvert.SerializeObject(users));
+        }
+        
         [Test]
         public void Query(){
             var db = new DbContext(BuildConnection());

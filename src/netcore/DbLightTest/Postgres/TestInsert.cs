@@ -17,7 +17,7 @@ namespace DbLightTest.Postgres
             var db = new DbContext(QuickStart.BuildConnection());
 
             var user = new User();
-            user.UserId = 12;
+            user.UserId = 13;
             user.UserName = "Name " + user.UserId;
             user.WeChatCode = "WeChat " + user.UserId;
             user.Phone = "130-" + user.UserId;
