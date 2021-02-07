@@ -24,6 +24,18 @@ namespace DbLightTest.Postgres
         }
 
         [Test]
+        public void PageBreak(){
+            var db = new DbContext(QuickStart.BuildConnection());
+            var query = db.Query<User>()
+                .Top(10)
+                .Offset(20)
+                .OrderBy(x => x.UserId);
+
+            Console.WriteLine(query.ToString());
+            Console.WriteLine(JsonConvert.SerializeObject(query.ToList()));
+        }
+        
+        [Test]
         public void Distinct(){
             var db = new DbContext(QuickStart.BuildConnection());
             var query = db.Query<User>()

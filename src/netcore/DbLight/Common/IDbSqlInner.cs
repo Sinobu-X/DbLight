@@ -17,5 +17,6 @@ namespace DbLight.Common
         string TopSqlTop(int top);
         string TopSqlWhere(int top);
         string TopSqlLimit(int top);
+        string OffsetSql(int offset);
     }
 }

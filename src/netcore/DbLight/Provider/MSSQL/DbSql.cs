@@ -102,5 +102,9 @@ namespace DbLight.Provider.MSSQL
         public string TopSqlLimit(int top){
             return null;
         }
+
+        public string OffsetSql(int offset) {
+            return null;
+        }
     }
 }

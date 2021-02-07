@@ -96,5 +96,9 @@ namespace DbLight.Provider.Postgres
         public string TopSqlLimit(int top){
             return " LIMIT " + top;
         }
+        
+        public string OffsetSql(int offset) {
+            return " OFFSET " + offset;
+        }
     }
 }

@@ -2,4 +2,4 @@ find . -name '.DS_Store' -type f -delete
 
 Build Project
 nuget pack DbLight.csproj
-nuget push DbLightCore.2.0.15.nupkg  -source nuget.org
+nuget push DbLightCore.2.0.16.nupkg  -source nuget.org

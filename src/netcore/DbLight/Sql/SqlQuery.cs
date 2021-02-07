@@ -52,6 +52,7 @@ namespace DbLight.Sql
     {
         private bool _distinct;
         private int _top;
+        private int _offset = int.MinValue;
 
         private readonly List<(DbColumnModelInfo Column, string Expression)> _columns =
             new List<(DbColumnModelInfo Column, string Expression)>();
@@ -122,6 +123,11 @@ namespace DbLight.Sql
 
         public SqlQuery<T> Top(int count){
             _top = count;
+            return this;
+        }
+        
+        public SqlQuery<T> Offset(int value){
+            _offset = value;
             return this;
         }
 
@@ -639,6 +645,14 @@ namespace DbLight.Sql
             //TOP LIMIT
             if (_top > 0){
                 var sub = DbSql.TopSqlLimit(Connection, _top);
+                if (!string.IsNullOrEmpty(sub)){
+                    sql.Append(sub);
+                }
+            }
+            
+            //OFFSET
+            if (_offset > -1){
+                var sub = DbSql.OffsetSql(Connection, _offset);
                 if (!string.IsNullOrEmpty(sub)){
                     sql.Append(sub);
                 }

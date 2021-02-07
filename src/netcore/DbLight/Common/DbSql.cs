@@ -63,5 +63,9 @@ namespace DbLight.Common
         internal static string TopSqlLimit(DbConnection connection, int top){
             return GetInner(connection).TopSqlLimit(top);
         }
+        
+        internal static string OffsetSql(DbConnection connection, int offset){
+            return GetInner(connection).OffsetSql(offset);
+        }
     }
 }

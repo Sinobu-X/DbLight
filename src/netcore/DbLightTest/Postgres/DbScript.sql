@@ -46,14 +46,14 @@ create table "user" (
 	user_name varchar(64),
 	we_chat_code varchar(64),
 	phone varchar(16),
-	birthday date,
+	birthday timestamp,
 	income money,
 	height numeric,
 	sex_id integer,
 	married boolean,
 	remark text,
 	photo bytea,
-	register_time time
+	register_time timestamp
 );
 
 -- alter table "user" owner to test;
