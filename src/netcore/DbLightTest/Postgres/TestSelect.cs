@@ -111,7 +111,17 @@ namespace DbLightTest.Postgres
             })));
         }
 
+        [Test]
+        public async Task Count(){
+            var db = new DbContext(QuickStart.BuildConnection());
+            var query = db.Query<(User User, int Count)>()
+                .Count(x => x.Count);
 
+            Console.WriteLine(query.ToString());
+            var count = await query.ToFirstAsync(x => x.Count);
+            Console.WriteLine(count);
+        }
+        
         [Test]
         public void LeftJoin(){
             var db = new DbContext(QuickStart.BuildConnection());
@@ -253,6 +263,23 @@ namespace DbLightTest.Postgres
                 Console.WriteLine(
                     JsonConvert.SerializeObject(query.ToList()));
             }
+        }
+        
+        [Test]
+        public void FindColumn(){
+            var db = new DbContext(QuickStart.BuildConnection());
+            var query = db.Query<(User User, Sex Sex)>()
+                .Select(x => new {
+                    x.User,
+                    x.Sex
+                })
+                .InnerJoin(x => x.Sex, x => x.Sex.SexId == x.User.SexId)
+                .Where(x => x.User.UserId > 0 && x.Sex.SexId != 2)
+                .OrderBy(x => x.User.Height);
+
+            Console.WriteLine(query.ToString());
+            Console.WriteLine(
+                JsonConvert.SerializeObject(query.ToList()));
         }
     }
 }

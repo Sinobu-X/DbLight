@@ -16,7 +16,7 @@ namespace DbLight.Mapping
         public DataTableMapping(DataColumnCollection columns, Func<T1, T2> converter) {
             _model = DbModelHelper.GetModelInfo(typeof(T1));
 
-            if (_model.Kind == DbModelKind.Object ||  _model.Kind == DbModelKind.Tuple) {
+            if (_model.Kind == DbModelKind.Object || _model.Kind == DbModelKind.Tuple) {
                 //ok
             }
             else {
@@ -125,7 +125,7 @@ namespace DbLight.Mapping
 
             _results.Add(_converter(item));
         }
-        
+
         private void AddRowForTuple(object[] values) {
             var tupleObj = Activator.CreateInstance(_model.Type);
             var tupleItems = new object[_model.Members.Count];
@@ -183,6 +183,9 @@ namespace DbLight.Mapping
                             }
 
                             SetFieldValue(p.FieldInfo, tupleItems[tupleItemIndex], value);
+                        }
+                        else if (tupleItemInfo.Model.Kind == DbModelKind.Value) {
+                            SetFieldValue(tupleItemInfo.FieldInfo, tupleObj, value);
                         }
                         else {
                             //nothing

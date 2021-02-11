@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using DbLight.DataAnnotations;
 
 namespace DbLightTest.Postgres
@@ -76,6 +77,7 @@ namespace DbLightTest.Postgres
 
         [Column("register_time")]
         public DateTime RegisterTime{ get; set; }
+        
     }
 
 
