@@ -658,6 +658,7 @@ namespace DbLight.Common
 
         public string ToCompareSql(ExpressionType expressionType, object value){
             var column = ColumnToSql(_expression);
+
             string connect;
             switch (expressionType){
                 case ExpressionType.Equal:

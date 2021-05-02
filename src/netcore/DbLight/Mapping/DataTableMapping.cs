@@ -228,6 +228,10 @@ namespace DbLight.Mapping
                 p.SetValue(obj, Convert.ToInt32(value));
                 return;
             }
+            else if (p.PropertyType == typeof(long)) {
+                p.SetValue(obj, Convert.ToInt64(value));
+                return;
+            }
 
             p.SetValue(obj, value);
         }
@@ -243,6 +247,10 @@ namespace DbLight.Mapping
             }
             else if (p.FieldType == typeof(int)) {
                 p.SetValue(obj, Convert.ToInt32(value));
+                return;
+            }
+            else if (p.FieldType == typeof(long)) {
+                p.SetValue(obj, Convert.ToInt64(value));
                 return;
             }
 

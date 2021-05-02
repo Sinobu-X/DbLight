@@ -50,6 +50,7 @@ create table "user" (
 	income money,
 	height numeric,
 	sex_id integer,
+    verify_id bigint,
 	married boolean,
 	remark text,
 	photo bytea,

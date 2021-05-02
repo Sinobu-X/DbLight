@@ -65,6 +65,9 @@ namespace DbLightTest.Postgres
 
         [Column("sex_id")]
         public int SexId{ get; set; }
+        
+        [Column("verify_id")]
+        public long VerifyId{ get; set; }
 
         [Column("married")]
         public bool Married{ get; set; }
